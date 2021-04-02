@@ -61,3 +61,21 @@ class Object:
             old (pygame.Vector2): previous size of the window
             new (pygame.Vector2): actual size of the window
         """
+
+
+class SpriteObject(Object):
+    def __init__(
+        self, pos, image: pygame.Surface, offset=(0, 0), size=(1, 1), vel=(0, 0)
+    ):
+        super().__init__(pos, size, vel)
+        self.image = image
+        self.image_offset = pygame.Vector2(offset)
+
+    def draw(self, gfx):
+        gfx.surf.blit(
+            self.image, self.image.get_rect(topleft=self.pos + self.image_offset)
+        )
+
+    @property
+    def sprite_pos(self):
+        return self.pos + self.image_offset
