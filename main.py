@@ -1,16 +1,15 @@
-from glob import glob
-from random import randint, randrange, shuffle, uniform
+from random import shuffle, uniform
 
 import pygame
 
-from constants import ANIMATIONS, DEBUG, SIZE, W, H
+from constants import DEBUG, H, SIZE, W
 from engine import ParticleFountain, SquareParticle
 from engine.app import App
+from engine.pygame_input import Axis, Button
 from engine.screen import IntegerScaleScreen
 from engine.state_machine import State
 from engine.utils import mix
 from objects import Enemy, Planet, Player
-from engine.pygame_input import Axis, Button, Inputs
 
 
 class GameState(State):

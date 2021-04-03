@@ -6,7 +6,7 @@ from pygame import Vector2
 
 from behaviors import EnemyBehavior, HorizontalBehavior, StationaryMultipleShooter
 from constants import ANIMATIONS, H, W, YELLOW
-from engine import Animation, Object, SquareParticle
+from engine import Animation, LineParticle, Object, ShardParticle, SquareParticle
 from engine.assets import tilemap
 from engine.object import SpriteObject
 from engine.particles import clamp
@@ -37,8 +37,11 @@ class Player(SpriteObject):
         self.vel.y = value.value * self.MAX_SPEED
 
     def fire(self, state):
-        state.add(Bullet(self.sprite_to_screen(self.GUN1) + (1, 0), (0, -1)))
-        state.add(Bullet(self.sprite_to_screen(self.GUN2) + (1, 0), (0, -1)))
+        state.add(Bullet(self.sprite_to_screen(self.GUN1) + (1, 0), (0, -1), self))
+        state.add(Bullet(self.sprite_to_screen(self.GUN2) + (1, 0), (0, -1), self))
+
+    def hit(self, bullet):
+        pass
 
     def logic(self, state):
         if self.vel.length() > self.MAX_SPEED:
@@ -122,7 +125,9 @@ class Bullet(SpriteObject):
     SPEED = 5
     SIZE = (1, 1)
 
-    def __init__(self, pos, direction):
+    def __init__(self, pos, direction, owner):
+        self.owner = owner
+
         img = tilemap("sprites", 0, 0, 16)
         rect = img.get_bounding_rect()
         img = img.subsurface(rect)
@@ -136,12 +141,39 @@ class Bullet(SpriteObject):
         pos += from_polar(h, angle) + from_polar(w / 2, angle + 90) - vel
         super().__init__(pos, img, (0, 0), img.get_size(), vel, 90 - angle)
 
-    def logic(self, state):
+    def logic(self, state: "State"):
         super().logic(state)
 
         screen = pygame.Rect(0, 0, W, H).inflate(32, 32)
         if not screen.collidepoint(*self.pos):
             self.alive = False
+
+        if self.owner is state.player:
+            for enemy in state.get_all(Enemy):
+                self.handle_collision(enemy, state)
+
+        else:
+            self.handle_collision(state.player, state)
+
+    def handle_collision(self, object, state):
+        if object.rect.collidepoint(self.pos):
+            object.hit(self)
+            self.alive = False
+            for _ in range(12):
+                state.particles.add(
+                    LineParticle(gauss(8, 2), YELLOW)
+                    .builder()
+                    .at(
+                        self.pos, gauss(270 - self.rotation, 20)
+                    )  # the angle is 90-self.rotation
+                    .velocity(gauss(5, 1))
+                    .sized(uniform(1, 3))
+                    .living(10)
+                    .anim_fade()
+                    .build()
+                )
+            return True
+        return False
 
 
 class Enemy(SpriteObject):
@@ -165,7 +197,10 @@ class Enemy(SpriteObject):
         self.rotation = angle_towards(self.rotation, angle_towards_player, 2)
 
     def fire(self, state, direction=(0, 1)):
-        state.add(Bullet(self.sprite_to_screen(self.GUN), direction))
+        state.add(Bullet(self.sprite_to_screen(self.GUN), direction, self))
+
+    def hit(self, bullet):
+        pass
 
     def draw(self, gfx):
         super().draw(gfx)

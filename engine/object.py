@@ -27,6 +27,10 @@ class Object:
     def center(self, value):
         self.pos = value - self.size / 2
 
+    @property
+    def rect(self):
+        return pygame.Rect(self.pos, self.size)
+
     def logic(self, state):
         """Overwrite this to update the object every frame.
 
