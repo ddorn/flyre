@@ -44,3 +44,22 @@ def from_polar(r: float, angle: float):
     vec = pygame.Vector2()
     vec.from_polar((r, angle))
     return vec
+
+
+def clamp(x, mini, maxi):
+    if x < mini:
+        return mini
+    if x > maxi:
+        return maxi
+    return x
+
+
+def angle_towards(start, goal, max_movement):
+    """Return the angle towards goal that is a most max_movement for the start."""
+    start %= 360
+    goal %= 360
+
+    if abs(start - goal) > 180:
+        return start + clamp(start - goal, -max_movement, max_movement)
+    else:
+        return start + clamp(goal - start, -max_movement, max_movement)

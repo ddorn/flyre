@@ -1,8 +1,12 @@
 import pygame
 
+from . import GFX
+from .assets import rotate
 from .settings import settings
 
 __all__ = ["Object"]
+
+from .utils import vec2int
 
 
 class Object:
@@ -67,7 +71,13 @@ class SpriteObject(Object):
     SCALE = 1
 
     def __init__(
-        self, pos, image: pygame.Surface, offset=(0, 0), size=(1, 1), vel=(0, 0)
+        self,
+        pos,
+        image: pygame.Surface,
+        offset=(0, 0),
+        size=(1, 1),
+        vel=(0, 0),
+        rotation=0,
     ):
         # :size: is not related to the image, but to the hitbox
 
@@ -76,17 +86,36 @@ class SpriteObject(Object):
             image = pygame.transform.scale(
                 image, (self.SCALE * image.get_width(), self.SCALE * image.get_height())
             )
-        self.image = image
+        self.base_image = image
         self.image_offset = pygame.Vector2(offset)
+        self.rotation = rotation
 
-    def draw(self, gfx):
-        gfx.surf.blit(self.image, self.image.get_rect(topleft=self.sprite_pos))
+    @property
+    def image(self):
+        return rotate(self.base_image, int(self.rotation))
+
+    def draw(self, gfx: "GFX"):
+        gfx.surf.blit(self.image, self.image.get_rect(center=self.sprite_center))
 
     @property
     def sprite_pos(self):
         return self.pos + self.image_offset * self.SCALE
 
+    @property
+    def sprite_center(self):
+        return (
+            self.pos
+            + self.image_offset * self.SCALE
+            + pygame.Vector2(self.base_image.get_size()) / 2
+        )
+
     def sprite_to_screen(self, pos):
         """Convert a position in the sprite to its world coordinates."""
-        # noinspection PyTypeChecker
-        return self.sprite_pos + (pos[0] * self.SCALE, pos[1] * self.SCALE)
+        pos = (
+            pygame.Vector2(pos)
+            - pygame.Vector2(self.base_image.get_size()) / 2 / self.SCALE
+        )
+        pos.rotate_ip(-self.rotation)
+        pos *= self.SCALE
+        r = self.sprite_center + pos
+        return r

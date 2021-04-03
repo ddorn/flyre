@@ -4,13 +4,14 @@ from random import gauss, randint, randrange, uniform
 import pygame
 from pygame import Vector2
 
+from behaviors import EnemyBehavior, HorizontalBehavior, StationaryMultipleShooter
 from constants import ANIMATIONS, H, W, YELLOW
 from engine import Animation, Object, SquareParticle
 from engine.assets import tilemap
 from engine.object import SpriteObject
 from engine.particles import clamp
 from engine.pygame_input import Axis
-from engine.utils import from_polar
+from engine.utils import angle_towards, from_polar, vec2int
 
 
 class Player(SpriteObject):
@@ -36,8 +37,8 @@ class Player(SpriteObject):
         self.vel.y = value.value * self.MAX_SPEED
 
     def fire(self, state):
-        state.add(Bullet(self.sprite_to_screen(self.GUN1) + (1, 0), -90))
-        state.add(Bullet(self.sprite_to_screen(self.GUN2) + (1, 0), -90))
+        state.add(Bullet(self.sprite_to_screen(self.GUN1) + (1, 0), (0, -1)))
+        state.add(Bullet(self.sprite_to_screen(self.GUN2) + (1, 0), (0, -1)))
 
     def logic(self, state):
         if self.vel.length() > self.MAX_SPEED:
@@ -121,16 +122,19 @@ class Bullet(SpriteObject):
     SPEED = 5
     SIZE = (1, 1)
 
-    def __init__(self, pos, angle):
+    def __init__(self, pos, direction):
         img = tilemap("sprites", 0, 0, 16)
         rect = img.get_bounding_rect()
         img = img.subsurface(rect)
 
-        vel = from_polar(self.SPEED, angle)
+        vel = pygame.Vector2(direction)
+        vel.scale_to_length(self.SPEED)
         w, h = img.get_size()
 
-        pos += from_polar(h, angle) + from_polar(w / 2, angle - 90) - vel
-        super().__init__(pos, img, (0, 0), img.get_size(), vel)
+        angle = -vel.angle_to((1, 0))
+        print(angle, direction)
+        pos += from_polar(h, angle) + from_polar(w / 2, angle + 90) - vel
+        super().__init__(pos, img, (0, 0), img.get_size(), vel, 90 - angle)
 
     def logic(self, state):
         super().logic(state)
@@ -143,9 +147,40 @@ class Bullet(SpriteObject):
 class Enemy(SpriteObject):
     SCALE = 2
 
-    OFFSET = (8, 9)
-    SIZE = (17, 17)
+    OFFSET = (-8, -9)
+    SIZE = Vector2(17, 17) * SCALE
+    GUN = (16, 18)
 
     def __init__(self, pos):
         image = tilemap("spaceships", 0, 1, 32)
         super().__init__(pos, image, self.OFFSET, self.SIZE)
+        self.behabvior = StationaryMultipleShooter(self)
+
+    def logic(self, state):
+        super().logic(state)
+        self.behabvior.logic(state)
+
+        angle_towards_player = 90 + (state.player.pos - self.pos).angle_to((1, 0))
+
+        self.rotation = angle_towards(self.rotation, angle_towards_player, 2)
+
+    def fire(self, state, direction=(0, 1)):
+        state.add(Bullet(self.sprite_to_screen(self.GUN), direction))
+
+    def draw(self, gfx):
+        super().draw(gfx)
+        gfx.surf.set_at(vec2int(self.sprite_to_screen(self.GUN)), "red")
+
+
+class DrawnVector(Object):
+    def __init__(self, anchor, vec, color="red", scale=20):
+        super().__init__(anchor)
+        self.anchor = anchor
+        self.color = color
+        self.vec = vec
+        self.scale = scale
+
+    def draw(self, gfx):
+        pygame.draw.line(
+            gfx.surf, self.color, self.anchor, self.anchor + self.vec * self.scale
+        )

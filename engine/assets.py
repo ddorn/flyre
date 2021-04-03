@@ -15,6 +15,11 @@ def image(name: str):
     return pygame.image.load(file)
 
 
+@lru_cache(10000)
+def rotate(image, degrees):
+    return pygame.transform.rotate(image, degrees)
+
+
 @lru_cache()
 def font(name: str, size: int):
     file = ASSETS_DIR / "fonts" / (name + ".ttf")

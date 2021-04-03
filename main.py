@@ -3,22 +3,23 @@ from random import randint, randrange, shuffle, uniform
 
 import pygame
 
-from constants import ANIMATIONS, SIZE, W, H
+from constants import ANIMATIONS, DEBUG, SIZE, W, H
 from engine import ParticleFountain, SquareParticle
 from engine.app import App
 from engine.screen import IntegerScaleScreen
 from engine.state_machine import State
+from engine.utils import mix
 from objects import Enemy, Planet, Player
 from engine.pygame_input import Axis, Button, Inputs
 
 
 class GameState(State):
-    BG_COLOR = "#203040"
+    BG_COLORS = [pygame.Color(c) for c in ["#203040", "#481e66", "#008782", "#3f1f3c"]]
 
     def __init__(self):
         super().__init__()
 
-        self.generate_planets(6)
+        self.generate_planets(6 * (1 - DEBUG))
 
         self.player = self.add(Player((100, 200)))
         self.add(Enemy((20, 20)))
@@ -70,6 +71,13 @@ class GameState(State):
 
     def logic(self):
         if not self.paused:
+            transition = 20 * 60
+            first = self.timer // transition % len(self.BG_COLORS)
+            second = (first + 1) % len(self.BG_COLORS)
+            t = (self.timer % transition) / transition
+            bg = mix(self.BG_COLORS[first], self.BG_COLORS[second], t)
+
+            self.BG_COLOR = bg
             super().logic()
 
 
