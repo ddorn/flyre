@@ -1,10 +1,11 @@
-from random import gauss
+from glob import glob
+from random import gauss, randint, randrange, uniform
 
 import pygame
 from pygame import Vector2
 
-from constants import H, W, YELLOW
-from engine import Object, SquareParticle
+from constants import ANIMATIONS, H, W, YELLOW
+from engine import Animation, Object, SquareParticle
 from engine.assets import tilemap
 from engine.object import SpriteObject
 from engine.particles import clamp
@@ -63,21 +64,56 @@ class Player(SpriteObject):
 
 class Planet(Object):
     Z = -1
+    TOTAL_PLANETS = len(glob(str(ANIMATIONS) + "/planet*.json"))
 
-    def __init__(self, number, pos):
-        super().__init__(pos)
-        self.timer = 0
-        self.number = number
+    def __init__(self, number, pos, speed=2):
+        self.animation = Animation(f"planet{number}", speed)
+
+        super().__init__(
+            pos, (self.animation.tile_size, self.animation.tile_size), vel=(0, 0.5)
+        )
+
+    @classmethod
+    def random_planet(cls, number, avoid_positions, y=None, max_trials=1000):
+        done = False
+        trials = 0
+        while not done:
+            trials += 1
+            if y is not None:
+                pos = uniform(0, W), y
+            else:
+                pos = uniform(0, W), uniform(-H / 2, H)
+
+            # Any position is too close
+            for p in avoid_positions:
+                if p.distance_to(pos) < 200:
+                    break
+            else:
+                done = True
+
+            if trials > max_trials:
+                return None
+
+        speed = randint(2, 5)
+        return Planet(number, pos, speed)
 
     def logic(self, state):
-        self.timer += 1
+        super().logic(state)
+        self.animation.logic()
+
+        if self.pos.y > H + self.size.y:
+
+            number = randrange(self.TOTAL_PLANETS)
+            positions = [planet.pos for planet in state.get_all(Planet)]
+            # planet can be none if it can't place it, so I keep the old planet alive until I can place it.
+            planet = Planet.random_planet(number, positions, -H / 2)
+
+            if planet is not None:
+                self.alive = False
+                state.add(planet)
 
     def draw(self, gfx):
-        f = (self.timer // 6) % 600
-        x = f % 100
-        y = f // 100
-
-        frame = tilemap(f"planet{self.number}", x, y, 100)
+        frame = self.animation.image()
         gfx.blit(frame, center=self.pos)
 
 

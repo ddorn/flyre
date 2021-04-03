@@ -1,6 +1,10 @@
+from glob import glob
+from random import randint, randrange, shuffle, uniform
+
 import pygame
 
-from constants import SIZE, W, H
+from constants import ANIMATIONS, SIZE, W, H
+from engine import ParticleFountain, SquareParticle
 from engine.app import App
 from engine.screen import IntegerScaleScreen
 from engine.state_machine import State
@@ -14,7 +18,8 @@ class GameState(State):
     def __init__(self):
         super().__init__()
 
-        self.add(Planet(4, (W * 0.66, H - 20)))
+        self.generate_planets(6)
+
         self.player = self.add(Player((100, 200)))
         self.add(Enemy((20, 20)))
 
@@ -34,6 +39,31 @@ class GameState(State):
         self.paused = False
         self.inputs["pause"] = Button(pygame.K_p)
         self.inputs["pause"].on_press(self.toggle_pause)
+
+        self.particles.fountains.append(
+            ParticleFountain(
+                lambda: SquareParticle("white")
+                .builder()
+                .at((uniform(0, W), uniform(-H / 3, H)), 90)
+                .velocity(0.2)
+                .living(6 * 60)
+                .sized(uniform(1, 3))
+                .anim_blink()
+                .build(),
+                0.2,
+            )
+        )
+
+    def generate_planets(self, nb):
+        positions = []
+        possibilities = list(range(Planet.TOTAL_PLANETS))
+        shuffle(possibilities)
+
+        for number in possibilities[:nb]:
+            planet = Planet.random_planet(number, positions)
+            if planet:
+                self.add(planet)
+                positions.append(planet.pos)
 
     def toggle_pause(self, *args):
         self.paused = not self.paused

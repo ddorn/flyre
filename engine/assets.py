@@ -6,13 +6,12 @@ from pathlib import Path
 
 import pygame
 
-
-ASSETS_DIR = Path(__file__).parent.parent / "assets"
+from constants import *
 
 
 @lru_cache()
 def image(name: str):
-    file = ASSETS_DIR / "images" / (name + ".png")
+    file = IMAGES / (name + ".png")
     return pygame.image.load(file)
 
 
@@ -25,50 +24,39 @@ def font(name: str, size: int):
 @lru_cache()
 def tilemap(name, x, y, tile_size=32):
     img = image(name)
+    w = img.get_width()
+
+    # Wrap x when bigger than line length
+    tiles_in_a_row = w // tile_size
+    y += x // tiles_in_a_row
+    x %= tiles_in_a_row
+
     return img.subsurface((x * tile_size, y * tile_size, tile_size, tile_size))
 
 
 class Animation:
-    def __init__(self, name: str, flip_x=False):
-        self.name, self.anim = name.split()
-        data = ASSETS_DIR / "animations" / (self.name + ".json")
-        data = json.loads(data.read_text())
+    def __init__(self, name: str, override_frame_duration=None, flip_x=False):
         self.timer = 0
-        self.tile_sheet = data["tile_sheet"]
-        self.tile_x = data["tile_x"]
-        self.tile_y = data["tile_y"]
-        self.line = data["anims"][self.anim]["line"]
-        self.length = data["anims"][self.anim]["length"]
-        dur = data["anims"][self.anim]["duration"]
-        self.durations = [dur] * self.length if isinstance(dur, int) else dur
-        assert len(self.durations) == self.length
-        self.cum_duration = list(itertools.accumulate(self.durations))
-        self.flip = data["anims"][self.anim].get("flip", False)
+        self.name = name
+
+        data = ANIMATIONS / (self.name + ".json")
+        data = json.loads(data.read_text())
+
+        self.tile_size = data["tile_size"]
+        self.frame_nb = data["length"]
+        self.frame_duration = override_frame_duration or data["duration"]
         self.flip_x = flip_x
+
+        print(data)
 
     def __len__(self):
         """Number of frames for one full loop."""
-        if self.flip:
-            return self.cum_duration[-1] + self.cum_duration[-2]
-        return self.cum_duration[-1]
+        return self.frame_nb * self.frame_duration
 
-    def update(self):
+    def logic(self):
         self.timer += 1
 
     def image(self):
         time = self.timer % len(self)
-        if self.flip and time >= self.cum_duration[-1]:
-            time = self.cum_duration[-1] + self.cum_duration[-2] - time - 1
-        # Find the index where the time should go
-        frame = bisect_right(self.cum_duration, time)
-
-        return self._image(
-            self.tile_sheet, frame, self.line, self.tile_x, self.tile_y, self.flip_x
-        )
-
-    @staticmethod
-    @lru_cache()
-    def _image(sheet: str, x, y, tx, ty, flip_x):
-        surf = image(sheet)
-        img = surf.subsurface(tx * x, ty * y, tx, ty)
-        return pygame.transform.flip(img, flip_x, False)
+        frame_nb = time // self.frame_duration
+        return tilemap(self.name, frame_nb, 0, self.tile_size)
