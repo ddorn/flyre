@@ -4,7 +4,7 @@ from constants import SIZE, W, H
 from engine.app import App
 from engine.screen import IntegerScaleScreen
 from engine.state_machine import State
-from objects import Planet, Player
+from objects import Enemy, Planet, Player
 from engine.pygame_input import Axis, Button, Inputs
 
 
@@ -16,6 +16,7 @@ class GameState(State):
 
         self.add(Planet(4, (W * 0.66, H - 20)))
         self.player = self.add(Player((100, 200)))
+        self.add(Enemy((20, 20)))
 
         self.inputs["horizontal"] = Axis(
             [pygame.K_a, pygame.K_LEFT], [pygame.K_d, pygame.K_RIGHT]

@@ -64,18 +64,29 @@ class Object:
 
 
 class SpriteObject(Object):
+    SCALE = 1
+
     def __init__(
         self, pos, image: pygame.Surface, offset=(0, 0), size=(1, 1), vel=(0, 0)
     ):
+        # :size: is not related to the image, but to the hitbox
+
         super().__init__(pos, size, vel)
+        if self.SCALE > 1:
+            image = pygame.transform.scale(
+                image, (self.SCALE * image.get_width(), self.SCALE * image.get_height())
+            )
         self.image = image
         self.image_offset = pygame.Vector2(offset)
 
     def draw(self, gfx):
-        gfx.surf.blit(
-            self.image, self.image.get_rect(topleft=self.pos + self.image_offset)
-        )
+        gfx.surf.blit(self.image, self.image.get_rect(topleft=self.sprite_pos))
 
     @property
     def sprite_pos(self):
-        return self.pos + self.image_offset
+        return self.pos + self.image_offset * self.SCALE
+
+    def sprite_to_screen(self, pos):
+        """Convert a position in the sprite to its world coordinates."""
+        # noinspection PyTypeChecker
+        return self.sprite_pos + (pos[0] * self.SCALE, pos[1] * self.SCALE)
