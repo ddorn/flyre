@@ -1,11 +1,14 @@
-from random import gauss, random, uniform
+from random import gauss, random
 
 import pygame
 
-from constants import DEBUG, H, W, WORLD, YELLOW
+from constants import WORLD, YELLOW
 from engine import App, LineParticle
-from engine.object import Entity, SpriteObject
+from engine.object import Entity
 from engine.utils import chrange, clamp_length, from_polar, part_perp_to, random_in_rect
+
+
+__all__ = ["SpaceShip"]
 
 
 class Cooldown:
@@ -134,7 +137,7 @@ class SpaceShip(Entity):
             yield
 
     def hover_around(self, duration):
-        from enemies import Enemy
+        from . import Enemy
 
         state = App.current_state()
         player = state.player

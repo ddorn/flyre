@@ -7,9 +7,7 @@ from . import App, GFX
 from .assets import font, rotate
 from .settings import settings
 
-__all__ = ["Object"]
-
-from .utils import vec2int
+__all__ = ["Object", "Entity", "SpriteObject"]
 
 
 class Object:
@@ -56,8 +54,7 @@ class Object:
         self.scripts.difference_update(to_remove)
 
     def draw(self, gfx: "GFX"):
-        if settings.debug:
-            gfx.rect(*self.pos, *self.size, "red", 1)
+        self.state.debug.rectangle(self.rect)
 
     def on_death(self, state):
         """Overwrite this to have a logic when the object dies.
@@ -115,6 +112,7 @@ class SpriteObject(Object):
         return rotate(self.base_image, int(self.rotation))
 
     def draw(self, gfx: "GFX"):
+        super().draw(gfx)
         gfx.surf.blit(self.image, self.image.get_rect(center=self.sprite_center))
 
     @property
@@ -212,7 +210,7 @@ class Entity(SpriteObject):
         img = image.copy()
         mask = pygame.mask.from_surface(img)
         img = mask.to_surface(setcolor=RED)
-        img.set_colorkey(0)
+        img.set_colorkey((0, 0, 0))
         return img
 
     @property

@@ -4,8 +4,8 @@ from random import choice, gauss, randint, uniform
 import pygame
 from pygame import Vector2
 
-from bullets import Bullet
-from constants import ANIMATIONS, WORLD, YELLOW
+from .bullets import Bullet
+from constants import ANIMATIONS, DEBUG, WORLD, YELLOW
 from engine import (
     Animation,
     App,
@@ -15,9 +15,11 @@ from engine import (
 )
 from engine.assets import font, tilemap
 from engine.object import Entity
-from engine.particles import clamp
 from engine.pygame_input import Axis
-from engine.utils import random_in_rect
+from engine.utils import random_in_rect, clamp
+
+
+__all__ = ["Planet", "Player", "Debug"]
 
 
 class Player(Entity):
@@ -117,6 +119,7 @@ class Planet(Object):
     def random_planet(cls, number, avoid_positions, y=None, max_trials=1000):
         done = False
         trials = 0
+        pos = (0, 0)
         while not done:
             trials += 1
             if y is not None:
@@ -167,21 +170,45 @@ class Debug(Object):
         super().__init__((0, 0))
         self.points = []
         self.vectors = []
+        self.rects = []
+
+        self.lasts = [[], [], []]
+
+        self.enabled = DEBUG
+        self.paused = False
+
+    def toggle(self, *args):
+        self.enabled = not self.enabled
 
     def point(self, x, y, color="red"):
-        self.points.append((x, y, color))
-        return (x, y)
+        if self.enabled:
+            self.points.append((x, y, color))
+        return x, y
 
     def vector(self, vec, anchor, color="red", scale=1):
-        self.vectors.append((Vector2(anchor), Vector2(vec) * scale, color))
+        if self.enabled:
+            self.vectors.append((Vector2(anchor), Vector2(vec) * scale, color))
         return vec
 
+    def rectangle(self, rect, color="red"):
+        if self.enabled:
+            self.rects.append((rect, color))
+        return rect
+
     def draw(self, gfx):
+        if self.paused:
+            self.points, self.vectors, self.rects = self.lasts
+
         for (x, y, color) in self.points:
             pygame.draw.circle(gfx.surf, color, (x, y), 2)
 
         for (anchor, vec, color) in self.vectors:
             pygame.draw.line(gfx.surf, color, anchor, anchor + vec)
 
-        self.points.clear()
-        self.vectors.clear()
+        for rect, color in self.rects:
+            pygame.draw.rect(gfx.surf, color, rect, 1)
+
+        self.lasts = [self.points, self.vectors, self.rects]
+        self.points = []
+        self.vectors = []
+        self.rects = []

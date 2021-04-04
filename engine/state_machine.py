@@ -33,6 +33,9 @@ class State:
         self.inputs["quit"] = Button(QuitEvent(), K_ESCAPE, K_q)
         self.inputs["quit"].on_press(lambda e: setattr(self, "next_state", None))
 
+        self.inputs["debug"] = Button(K_F11)
+        self.inputs["debug"].on_press(self.debug.toggle)
+
     # Life phase of state
 
     def on_resume(self):

@@ -2,13 +2,15 @@ from random import gauss, randrange, uniform
 
 from pygame import Vector2
 
-from spaceship import SpaceShip
+from .spaceship import SpaceShip
 from constants import WORLD
 from engine import App
 from engine.assets import tilemap
 from engine.utils import angle_towards, clamp_length
-from engine.object import Entity
-from bullets import Bullet, Laser
+from .bullets import Bullet, Laser
+
+
+__all__ = ["Enemy", "LaserEnemy", "ChargeEnemy"]
 
 
 class Enemy(SpaceShip):
@@ -31,9 +33,7 @@ class Enemy(SpaceShip):
         angle_towards_player = -90 + (
             state.player.center - self.sprite_to_screen(self.GUN)
         ).angle_to((1, 0))
-        print("----", self.rotation)
         self.rotation = angle_towards(self.rotation, angle_towards_player, 2)
-        print("++++", self.rotation)
 
     def script(self):
         while True:
@@ -54,18 +54,14 @@ class Enemy(SpaceShip):
         if self.life <= 0 and bullet.owner is player:
             player.did_kill(self)
 
-    def draw(self, gfx):
-        super().draw(gfx)
-        # gfx.surf.set_at(vec2int(self.sprite_to_screen(self.GUN)), "red")
-
     def on_death(self, state):
         state.add(LaserEnemy((uniform(WORLD.left, WORLD.right), -30)))
 
 
 class LaserEnemy(Enemy):
     GUN = (16.5, 7)
-    SIZE = (22, 16)
-    OFFSET = Vector2(-6, -11) * Enemy.SCALE
+    SIZE = Vector2(22, 16) * Enemy.SCALE
+    OFFSET = (-6, -11)
 
     def __init__(self, pos):
         super().__init__(pos, 2)

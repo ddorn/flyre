@@ -1,12 +1,12 @@
 from random import gauss, random, uniform
 
-import pygame
-
 from constants import *
 from engine import LineParticle, SquareParticle
 from engine.assets import tilemap
 from engine.object import Object, SpriteObject
 from engine.utils import from_polar, vec2int
+
+__all__ = ["Bullet", "Laser"]
 
 
 class BaseBullet:
@@ -16,7 +16,7 @@ class BaseBullet:
 
     def logic(self, state):
         if self.owner is state.player:
-            from enemies import Enemy
+            from .enemies import Enemy
 
             for enemy in state.get_all(Enemy):
                 if self.handle_collision(enemy, state):
@@ -44,11 +44,12 @@ class Bullet(SpriteObject, BaseBullet):
         vel.scale_to_length(self.SPEED)
         w, h = img.get_size()
 
+        # noinspection PyTypeChecker
         angle = -vel.angle_to((1, 0))
         pos += from_polar(h, angle) + from_polar(w / 2, angle + 90) - vel
         SpriteObject.__init__(self, pos, img, (0, 0), img.get_size(), vel, 90 - angle)
 
-    def logic(self, state: "State"):
+    def logic(self, state):
         SpriteObject.logic(self, state)
         BaseBullet.logic(self, state)
 
@@ -56,9 +57,9 @@ class Bullet(SpriteObject, BaseBullet):
         if not screen.collidepoint(*self.pos):
             self.alive = False
 
-    def handle_collision(self, object, state):
-        if object.rect.collidepoint(self.pos):
-            object.hit(self)
+    def handle_collision(self, other, state):
+        if other.rect.collidepoint(self.pos):
+            other.hit(self)
             self.alive = False
             for _ in range(12):
                 state.particles.add(
@@ -100,7 +101,7 @@ class Laser(Object, BaseBullet):
         self.laser_duration = laser_duration + self.preshoot_end
 
     def logic(self, state):
-        super().logic(state)
+        Object.logic(self, state)
 
         self.timer += 1
 
@@ -125,24 +126,18 @@ class Laser(Object, BaseBullet):
                 .build()
             )
 
-            if self.owner is state.player:
-                from enemies import Enemy
-
-                for enemy in state.get_all(Enemy):
-                    self.handle_collision(enemy, state)
-            else:
-                self.handle_collision(state.player, state)
+            BaseBullet.logic(self, state)
 
         # End
         if self.timer > self.laser_duration:
             self.alive = False
 
-    def handle_collision(self, object, state):
+    def handle_collision(self, other, state):
         start = self.pos
         end = self.pos + from_polar(1000, self.angle)
 
-        if p := object.rect.clipline((start, end)):
-            object.hit(self)
+        if p := other.rect.clipline((start, end)):
+            other.hit(self)
             start, end = p
             for _ in range(6):
                 state.particles.add(
