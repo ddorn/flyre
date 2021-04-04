@@ -16,5 +16,7 @@ IMAGES = ASSETS_DIR / "images"
 ANIMATIONS = ASSETS_DIR / "animations"
 FONTS = ASSETS_DIR / "fonts"
 
+UPWARDS = -90  # degrees
+DOWNWARDS = 90  # degrees
 
 DEBUG = False

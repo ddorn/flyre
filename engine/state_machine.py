@@ -25,6 +25,9 @@ class State:
         self.shake = 0
 
         self.particles = ParticleSystem()
+        from objects import Debug
+
+        self.debug = self.add(Debug())
 
         self.inputs = Inputs()
         self.inputs["quit"] = Button(QuitEvent(), K_ESCAPE, K_q)
@@ -108,6 +111,9 @@ class State:
             self.add_later.append(object)
         else:
             self.objects.add(object)
+
+        object.state = self
+
         return object
 
     def get_all(self, type_):

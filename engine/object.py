@@ -1,7 +1,10 @@
+from functools import lru_cache
+
 import pygame
 
-from . import GFX
-from .assets import rotate
+from constants import RED
+from . import App, GFX
+from .assets import font, rotate
 from .settings import settings
 
 __all__ = ["Object"]
@@ -17,7 +20,11 @@ class Object:
         self.size = pygame.Vector2(size)
         self.vel = pygame.Vector2(vel)
         self.alive = True
-        self.scripts = set()
+        self.scripts = {self.script()}
+        self.state = None
+
+    def script(self):
+        yield
 
     @property
     def center(self):
@@ -73,6 +80,7 @@ class Object:
 
 class SpriteObject(Object):
     SCALE = 1
+    INITIAL_ROTATION = -90
 
     def __init__(
         self,
@@ -93,6 +101,14 @@ class SpriteObject(Object):
         self.base_image = image
         self.image_offset = pygame.Vector2(offset)
         self.rotation = rotation
+
+    @property
+    def angle(self):
+        return (-self.rotation + self.INITIAL_ROTATION) % 360
+
+    @angle.setter
+    def angle(self, value):
+        self.rotation = -value + self.INITIAL_ROTATION
 
     @property
     def image(self):
@@ -123,3 +139,82 @@ class SpriteObject(Object):
         pos *= self.SCALE
         r = self.sprite_center + pos
         return r
+
+
+class Entity(SpriteObject):
+    """An object with heath and a sprite."""
+
+    INVICIBILITY_DURATION = 0
+
+    def __init__(
+        self,
+        pos,
+        image: pygame.Surface,
+        offset=(0, 0),
+        size=(1, 1),
+        vel=(0, 0),
+        rotation=0,
+        max_life=1000,
+    ):
+        super().__init__(pos, image, offset, size, vel, rotation)
+        self.max_life = max_life
+        self.life = max_life
+        self.last_hit = 100000000
+
+    def damage(self, amount):
+        if self.invincible:
+            return
+
+        self.last_hit = 0
+
+        self.life -= amount
+        if self.life < 0:
+            self.life = 0
+
+        surf = font(20).render(str(amount), False, RED)
+
+        from engine import ImageParticle
+
+        App.current_state().particles.add(
+            ImageParticle(surf)
+            .builder()
+            .at(self.center, 90)
+            .velocity(1)
+            .sized(10)
+            .anim_fade()
+            .build()
+        )
+
+    def logic(self, state):
+        super().logic(state)
+
+        self.last_hit += 1
+
+        if self.life <= 0:
+            self.alive = False
+
+    def draw(self, gfx):
+        if self.last_hit < 3:
+            gfx.surf.blit(
+                self.red_image(self.image),
+                self.image.get_rect(center=self.sprite_center),
+            )
+            return
+
+        if self.invincible and self.last_hit % 6 > 3:
+            return  # no blit
+
+        super().draw(gfx)
+
+    @staticmethod
+    @lru_cache(1000)
+    def red_image(image: pygame.Surface):
+        img = image.copy()
+        mask = pygame.mask.from_surface(img)
+        img = mask.to_surface(setcolor=RED)
+        img.set_colorkey(0)
+        return img
+
+    @property
+    def invincible(self):
+        return self.last_hit < self.INVICIBILITY_DURATION

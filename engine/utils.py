@@ -33,10 +33,17 @@ def mix(color1, color2, t):
 
 
 def chrange(
-    x: float, initial_range: Tuple[float, float], target_range: Tuple[float, float]
+    x: float,
+    initial_range: Tuple[float, float],
+    target_range: Tuple[float, float],
+    power=1,
+    flipped=False,
 ):
     """Change the range of a number by mapping the initial_range to target_range using a linear transformation."""
     normalised = (x - initial_range[0]) / (initial_range[1] - initial_range[0])
+    normalised **= power
+    if flipped:
+        normalised = 1 - normalised
     return normalised * (target_range[1] - target_range[0]) + target_range[0]
 
 
@@ -80,3 +87,21 @@ def random_in_rect(rect: pygame.Rect, x_range=(0.0, 1.0), y_range=(0.0, 1.0)):
         uniform(rect.x + w * x_range[0], rect.x + w * x_range[1]),
         uniform(rect.y + h * y_range[0], rect.y + h * y_range[1]),
     )
+
+
+def clamp_length(vec, maxi):
+    """Scale the vector so it has a length of at most :maxi:"""
+
+    if vec.length() > maxi:
+        vec.scale_to_length(maxi)
+
+    return vec
+
+
+def part_perp_to(u, v):
+    """Return the part of u that is perpendicular to v"""
+    if v.length_squared() == 0:
+        return u
+
+    v = v.normalize()
+    return u - v * v.dot(u)

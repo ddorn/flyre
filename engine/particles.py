@@ -138,7 +138,7 @@ class Particle:
 
             Args:
                 pos: 2D position in pixels
-                angle: initial direction in degrees
+                angle: initial target in degrees
 
             Returns:
                 The particle being build.
@@ -149,10 +149,10 @@ class Particle:
             return self
 
         def velocity(self, speed: float, radial_velocity: DEGREES = 0):
-            """Speed is along the direction, and radial_velocity is how fast this direction changes.
+            """Speed is along the target, and radial_velocity is how fast this target changes.
 
             Args:
-                speed: px/frame along the direction
+                speed: px/frame along the target
                 radial_velocity: degrees/frame of angle change
             """
             self._p.speed = speed
@@ -166,7 +166,7 @@ class Particle:
             return self
 
         def acceleration(self, directional: float):
-            """Set the acceleration along the direction and the angular acceleration"""
+            """Set the acceleration along the target and the angular acceleration"""
             self._p.acc = directional
             return self
 

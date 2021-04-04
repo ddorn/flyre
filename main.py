@@ -9,7 +9,8 @@ from engine.pygame_input import Axis, Button
 from engine.screen import IntegerScaleScreen
 from engine.state_machine import State
 from engine.utils import mix, random_in_rect
-from objects import Enemy, Planet, Player
+from objects import Planet, Player
+from enemies import Enemy, LaserEnemy
 
 
 class GameState(State):
@@ -21,7 +22,7 @@ class GameState(State):
         self.generate_planets(6 * (1 - DEBUG))
 
         self.player = self.add(Player((100, 200)))
-        self.add(Enemy((20, 20)))
+        self.add(LaserEnemy((20, 20)))
 
         self.inputs["horizontal"] = Axis(
             [pygame.K_a, pygame.K_LEFT], [pygame.K_d, pygame.K_RIGHT]
