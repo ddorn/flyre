@@ -77,6 +77,11 @@ class App(StateMachine):
 
         self.state.handle_events(events)
 
+    @classmethod
+    def current_state(cls):
+        """Current state of the main app."""
+        return cls.MAIN_APP.state
+
 
 if __name__ == "__main__":
 

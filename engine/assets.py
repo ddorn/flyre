@@ -21,8 +21,8 @@ def rotate(image, degrees):
 
 
 @lru_cache()
-def font(name: str, size: int):
-    file = ASSETS_DIR / "fonts" / (name + ".ttf")
+def font(size: int, name: str = "Wellbutrin"):
+    file = FONTS / (name + ".ttf")
     return pygame.font.Font(file, size)
 
 

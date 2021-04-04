@@ -409,6 +409,8 @@ class ImageParticle(Particle):
 
         super().__init__()
 
+        self.size = min(self.original_surf.get_size())
+
     @property
     def alpha(self):
         return self._alpha
