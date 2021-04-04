@@ -1,3 +1,4 @@
+from contextlib import contextmanager
 from functools import lru_cache
 
 import pygame
@@ -14,12 +15,16 @@ class GFX:
         self.surf = surf
         self.world_center = pygame.Vector2(0, 0)
         """World coordinates that are in the center of the screen."""
-        self.world_scale = 16
+        self.world_scale = 1
         """How many pixel is one world unit."""
         self.ui_scale = 1
 
+        self.translation = pygame.Vector2()
+        """Translate all draw/blit by this amount."""
+
     # Positions / size conversion functions
 
+    '''
     def to_ui(self, pos):
         """Convert a position in the screen to ui coordinates."""
         return pygame.Vector2(pos) / self.ui_scale
@@ -67,16 +72,17 @@ class GFX:
         self.surf.blit(s, r)
 
     def world_blit(self, surf, pos, size, anchor="topleft"):
-
         s = self.scale_surf(surf, vec2int(size * self.world_scale))
         r = s.get_rect(**{anchor: pos * self.world_scale})
         r.topleft -= self.world_center
         self.surf.blit(s, r)
+    '''
 
     def blit(self, surf, **anchor):
         """Blit a surface directly on the underlying surface, coordinates are in pixels."""
 
         r = surf.get_rect(**anchor)
+        r.topleft += self.translation
         self.surf.blit(surf, r)
 
     # Draw functions
@@ -87,6 +93,8 @@ class GFX:
 
         if anchor:
             setattr(r, anchor, (x, y))
+
+        r.topleft += self.translation
 
         pygame.draw.rect(self.surf, color, r, width)
 
@@ -115,3 +123,17 @@ class GFX:
 
     def scroll(self, dx, dy):
         self.surf.scroll(dx, dy)
+
+    @contextmanager
+    def focus(self, rect: pygame.Rect):
+        """Set the draw rectangle with clip, and translate all draw calls
+        so that (0, 0) is the topleft of the given rectangle.
+        """
+
+        previous_clip = self.surf.get_clip()
+        self.surf.set_clip(rect)
+        self.translation = pygame.Vector2(rect.topleft)
+        yield
+        self.surf.set_clip(previous_clip)
+        if previous_clip:
+            self.translation = pygame.Vector2(previous_clip.topleft)

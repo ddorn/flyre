@@ -1,4 +1,5 @@
 from functools import lru_cache
+from random import uniform
 from typing import Tuple
 
 import pygame
@@ -63,3 +64,19 @@ def angle_towards(start, goal, max_movement):
         return start + clamp(start - goal, -max_movement, max_movement)
     else:
         return start + clamp(goal - start, -max_movement, max_movement)
+
+
+def random_in_rect(rect: pygame.Rect, x_range=(0.0, 1.0), y_range=(0.0, 1.0)):
+    """Return a random point inside a rectangle.
+
+    If x_range or y_range are given, they are interpreted as relative to the size of the rectangle.
+    For instance, a x_range of (-1, 3) would make the x range in a rectangle that is 3 times wider,
+    but still centered at the same position. (-2, 1) you expand the rectangle twice its size on the
+    left.
+    """
+    w, h = rect.size
+
+    return (
+        uniform(rect.x + w * x_range[0], rect.x + w * x_range[1]),
+        uniform(rect.y + h * y_range[0], rect.y + h * y_range[1]),
+    )

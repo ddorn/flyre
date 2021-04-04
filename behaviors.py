@@ -2,8 +2,8 @@ from random import gauss, random, uniform
 
 import pygame
 
-from constants import DEBUG, H, W
-from engine.utils import chrange
+from constants import DEBUG, H, W, WORLD
+from engine.utils import chrange, random_in_rect
 
 
 class Cooldown:
@@ -47,8 +47,8 @@ class HorizontalBehavior(EnemyBehavior):
         while True:
             if (
                 start
-                or self.enemy.pos.x + enemy.vel.x < 0
-                or self.enemy.pos.x + enemy.vel.x + enemy.size.x > W
+                or self.enemy.pos.x + enemy.vel.x < WORLD.left
+                or self.enemy.pos.x + enemy.vel.x + enemy.size.x > WORLD.right
             ):
                 start = False
                 direction *= -1
@@ -75,14 +75,18 @@ class StationaryMultipleShooter(EnemyBehavior):
             )
             goal_draw = self.state.add(DrawnVector((0, 0), enemy.vel, "green", scale=1))
             perp_draw = self.state.add(DrawnVector((100, 100), enemy.vel, "pink"))
+
         speed = gauss(2, 0.3)
         enemy.vel.x = speed
-
         slow_frames = 0
 
         while True:
             # Go to a random start location
-            goal = pygame.Vector2(uniform(W / 4, W * 3 / 4), uniform(30, H / 4))
+            margin = 15
+            rect = WORLD.inflate(-2 * margin, -2 * margin)
+            rect.height = WORLD.height / 2 - 2 * margin
+            goal = random_in_rect(rect)
+            print(goal, WORLD)
 
             while enemy.pos.distance_to(goal) > 20:
                 direction = goal - enemy.pos

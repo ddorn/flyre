@@ -6,7 +6,7 @@ import pygame
 from pygame import Vector2
 
 from behaviors import EnemyBehavior, HorizontalBehavior, StationaryMultipleShooter
-from constants import ANIMATIONS, H, RED, W, YELLOW
+from constants import ANIMATIONS, H, RED, W, WORLD, YELLOW
 from engine import (
     Animation,
     App,
@@ -20,7 +20,7 @@ from engine.assets import font, tilemap
 from engine.object import SpriteObject
 from engine.particles import clamp
 from engine.pygame_input import Axis
-from engine.utils import angle_towards, from_polar, vec2int
+from engine.utils import angle_towards, from_polar, random_in_rect, vec2int
 
 
 class Entity(SpriteObject):
@@ -154,13 +154,13 @@ class Player(Entity):
 
         super().logic(state)
 
-        self.pos.x = clamp(self.pos.x, 0, W - self.size.x)
-        self.pos.y = clamp(self.pos.y, 0, H - self.size.y)
+        self.pos.x = clamp(self.pos.x, WORLD.left, WORLD.right - self.size.x)
+        self.pos.y = clamp(self.pos.y, WORLD.top, WORLD.bottom - self.size.y)
 
     def draw(self, gfx):
         super().draw(gfx)
         score = font(20).render(str(self.score), False, YELLOW)
-        gfx.blit(score, topleft=(10, 7))
+        gfx.blit(score, topleft=WORLD.topleft + Vector2(10, 7))
 
     def did_kill(self, enemy):
         bonus = 100
@@ -210,7 +210,7 @@ class Enemy(Entity):
         # gfx.surf.set_at(vec2int(self.sprite_to_screen(self.GUN)), "red")
 
     def on_death(self, state):
-        state.add(Enemy((uniform(0, W), -30)))
+        state.add(Enemy((uniform(WORLD.left, WORLD.right), -30)))
 
         state.player.did_kill(self)
 
@@ -233,9 +233,9 @@ class Planet(Object):
         while not done:
             trials += 1
             if y is not None:
-                pos = uniform(0, W), y
+                pos = uniform(WORLD.left, WORLD.right), y
             else:
-                pos = uniform(0, W), uniform(-H / 2, H)
+                pos = random_in_rect(WORLD, (0, 1), (-1 / 2, 1))
 
             # Any position is too close
             for p in avoid_positions:
@@ -254,12 +254,12 @@ class Planet(Object):
         super().logic(state)
         self.animation.logic()
 
-        if self.pos.y > H + self.size.y:
+        if self.pos.y > WORLD.bottom + self.size.y:
 
             number = randrange(self.TOTAL_PLANETS)
             positions = [planet.pos for planet in state.get_all(Planet)]
             # planet can be none if it can't place it, so I keep the old planet alive until I can place it.
-            planet = Planet.random_planet(number, positions, -H / 2)
+            planet = Planet.random_planet(number, positions, WORLD.top - 200)
 
             if planet is not None:
                 self.alive = False
@@ -293,7 +293,7 @@ class Bullet(SpriteObject):
     def logic(self, state: "State"):
         super().logic(state)
 
-        screen = pygame.Rect(0, 0, W, H).inflate(32, 32)
+        screen = WORLD.inflate(32, 32)
         if not screen.collidepoint(*self.pos):
             self.alive = False
 

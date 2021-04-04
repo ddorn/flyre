@@ -2,13 +2,13 @@ from random import shuffle, uniform
 
 import pygame
 
-from constants import DEBUG, H, SIZE, W
-from engine import ParticleFountain, SquareParticle
+from constants import DEBUG, H, INFO_RECT, SIZE, W, WORLD, YELLOW
+from engine import GFX, ParticleFountain, SquareParticle
 from engine.app import App
 from engine.pygame_input import Axis, Button
 from engine.screen import IntegerScaleScreen
 from engine.state_machine import State
-from engine.utils import mix
+from engine.utils import mix, random_in_rect
 from objects import Enemy, Planet, Player
 
 
@@ -44,7 +44,7 @@ class GameState(State):
             ParticleFountain(
                 lambda: SquareParticle("white")
                 .builder()
-                .at((uniform(0, W), uniform(-H / 3, H)), 90)
+                .at(random_in_rect(WORLD, (0, 1), (-1 / 3, 1)), 90)
                 .velocity(0.2)
                 .living(6 * 60)
                 .sized(uniform(1, 3))
@@ -78,6 +78,17 @@ class GameState(State):
 
             self.BG_COLOR = bg
             super().logic()
+
+    def draw(self, gfx: "GFX"):
+        gfx.surf.set_clip(WORLD)
+        super().draw(gfx)
+
+        with gfx.focus(INFO_RECT):
+            self.draw_info(gfx)
+
+    def draw_info(self, gfx: GFX):
+        gfx.fill(self.BG_COLOR)
+        gfx.rect(0, 0, *INFO_RECT.size, YELLOW, 1)
 
 
 if __name__ == "__main__":
