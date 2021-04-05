@@ -6,7 +6,8 @@ from engine.pygame_input import Axis, Button
 from engine.state_machine import State
 from engine.utils import mix, random_in_rect
 from level import LEVELS
-from objects import Planet, Player, Title
+from objects import Planet, Title
+from objects.player import Player
 from objects.skilltree import SKILLTREE
 
 

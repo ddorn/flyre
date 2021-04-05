@@ -6,7 +6,7 @@ import pygame
 from constants import YELLOW
 from engine import Object
 from engine.assets import tilemap
-from objects import Player
+from objects.player import Player
 
 
 @dataclass

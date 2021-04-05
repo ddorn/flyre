@@ -1,4 +1,5 @@
 from functools import lru_cache
+from math import exp
 from random import uniform
 from typing import Tuple
 
@@ -117,3 +118,9 @@ def prop_in_rect(rect: pygame.Rect, prop_x: float, prop_y: float):
     """
 
     return rect.x - rect.w * prop_x, rect.y - rect.h * prop_y
+
+
+def bounce(x, f=0.2, k=60):
+    """Easing function that bonces over 1 and then stabilises."""
+    s = max(x - f, 0.0)
+    return min(x * x / (f * f), 1 + (2.0 / f) * s * exp(-k * s))

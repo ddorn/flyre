@@ -27,12 +27,35 @@ class Cooldown:
 
 class SpaceShip(Entity):
     GUN = (16, 18)
-    MAX_SPEED = 3
-    MAX_THRUST = MAX_SPEED / 15
+    MAX_THRUST = 0.2
+
+    def __init__(
+        self,
+        pos,
+        image: pygame.Surface,
+        offset=(0, 0),
+        size=(1, 1),
+        vel=(0, 0),
+        rotation=0,
+        max_life=1000,
+    ):
+        super().__init__(pos, image, offset, size, vel, rotation, max_life)
+
+        self.max_speed = 3
+        self.bullet_speed = 10
+        self.bullet_damage = 100
+        self.crit_chance = 0.3
+        self.crit_mult = 3
+        self.nb_bullets = 1
+        self.regen = 0
+        self.fire_chance = 0
+        self.fire_dmg = 0.1
+        self.fire_duration = 2
+        self.shield = False
 
     def force_to_move_towards(self, goal):
         direction = goal - self.pos
-        direction.scale_to_length(self.MAX_SPEED)
+        direction.scale_to_length(self.max_speed)
 
         perp = part_perp_to(direction, self.vel)
         return perp
@@ -48,7 +71,7 @@ class SpaceShip(Entity):
         return slow_force
 
     def force_to_accelerate(self):
-        if self.vel.length() < self.MAX_SPEED:
+        if self.vel.length() < self.max_speed:
             return self.vel * self.MAX_THRUST
         return pygame.Vector2()
 
@@ -148,7 +171,7 @@ class SpaceShip(Entity):
             thrust += self.force_to_avoid(player.pos, 100) * 0.3
             # don't go too far either
             thrust += self.force_to_stay_close(player.pos, 300)
-            thrust += self.force_to_slow_down(self.MAX_SPEED / 5) * 0.1
+            thrust += self.force_to_slow_down(self.max_speed / 5) * 0.1
             thrust += self.force_to_stay_up(WORLD.height / 4)
 
             thrust += self.force_to_avoid_walls(30)
@@ -170,7 +193,7 @@ class SpaceShip(Entity):
     def charge_to_player(self):
         direction = self.state.player.pos - self.pos
         direction.scale_to_length(self.MAX_THRUST * 3)
-        self.MAX_SPEED *= 4
+        self.max_speed *= 4
         rotation = self.rotation
         while WORLD.colliderect(self.rect):
             self.vel += direction

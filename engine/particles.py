@@ -190,9 +190,10 @@ class Particle:
             self._p.animations.append(animation)
             return self
 
-        def anim_fade(self):
+        def anim_fade(self, fade_start=0):
             def fade(particle):
-                alpha = int(255 * (1 - particle.life_prop))
+                t = (particle.life_prop - fade_start) / (1 - fade_start)
+                alpha = int(255 * (1 - t))
                 particle.alpha = alpha
 
             return self.anim(fade)

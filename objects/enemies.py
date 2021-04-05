@@ -25,7 +25,7 @@ class Enemy(SpaceShip):
         # self.behavior = StationaryMultipleShooter(self)
 
     def logic(self, state):
-        clamp_length(self.vel, self.MAX_SPEED)
+        clamp_length(self.vel, self.max_speed)
         super().logic(state)
 
         angle_towards_player = -90 + (

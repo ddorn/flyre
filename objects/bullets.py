@@ -1,18 +1,21 @@
+from math import exp
 from random import gauss, random, uniform
 
 from constants import *
-from engine import LineParticle, SquareParticle
-from engine.assets import tilemap
+from engine import ImageParticle, LineParticle, SquareParticle
+from engine.assets import font, tilemap
 from engine.object import Object, SpriteObject
-from engine.utils import from_polar, vec2int
+from engine.utils import bounce, from_polar, vec2int
 
 __all__ = ["Bullet", "Laser"]
 
 
 class BaseBullet:
-    def __init__(self, owner, damage=100):
+    def __init__(self, owner, damage=100, speed=5, crit=False):
         self.owner = owner
         self.damage = damage
+        self.speed = speed
+        self.crit = crit
 
     def logic(self, state):
         if self.owner is state.player:
@@ -33,15 +36,15 @@ class Bullet(SpriteObject, BaseBullet):
     SPEED = 5
     SIZE = (1, 1)
 
-    def __init__(self, pos, direction, owner, damage=100):
-        BaseBullet.__init__(self, owner, damage)
+    def __init__(self, pos, direction, owner, damage=100, speed=5, crit=False):
+        BaseBullet.__init__(self, owner, damage, speed, crit)
 
         img = tilemap("sprites", 0, 0, 16)
         rect = img.get_bounding_rect()
         img = img.subsurface(rect)
 
         vel = pygame.Vector2(direction)
-        vel.scale_to_length(self.SPEED)
+        vel.scale_to_length(self.speed)
         w, h = img.get_size()
 
         # noinspection PyTypeChecker
@@ -61,7 +64,7 @@ class Bullet(SpriteObject, BaseBullet):
         if other.rect.collidepoint(self.pos):
             other.hit(self)
             self.alive = False
-            for _ in range(12):
+            for _ in range(36 if self.crit else 12):
                 state.particles.add(
                     LineParticle(gauss(8, 2), YELLOW)
                     .builder()
@@ -74,6 +77,25 @@ class Bullet(SpriteObject, BaseBullet):
                     .anim_fade()
                     .build()
                 )
+            if self.crit:
+                crit_text = font(42).render("CRIT!", False, RED)
+
+                def expand(particle):
+                    particle.size = 20 * bounce(particle.life_prop)
+                    particle.need_redraw = True
+
+                state.particles.add(
+                    ImageParticle(crit_text)
+                    .builder()
+                    .at(self.pos, 0)
+                    .velocity(0)
+                    .sized(4)
+                    .anim(expand)
+                    .anim_fade(0.75)
+                    .living(2 * 60)
+                    .build()
+                )
+
             return True
         return False
 
