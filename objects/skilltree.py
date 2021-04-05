@@ -3,6 +3,7 @@ from typing import Callable
 
 import pygame
 
+from constants import YELLOW
 from engine import Object
 from engine.assets import tilemap
 from objects import Player
@@ -27,10 +28,70 @@ class Power:
     def sprite(self):
         return tilemap("sprites", self.sprite_index, 4, 16)
 
+    @property
+    def background(self):
+        return tilemap("sprites", 0, 3, 32)
+
+    def draw(self, gfx, pos):
+        bg = self.background
+        r = self.sprite.get_rect(topleft=pos)
+        gfx.surf.blit(bg, bg.get_rect(center=r.center))
+        gfx.surf.blit(self.sprite, r)
+
 
 @Power.make("Attack up", "+10% damage to enemies", 0)
 def attack_up(player):
     player.attack *= 1.1
+
+
+@Power.make("Bullets up", "Shoot one more bullet.", 1)
+def bullets_up(player):
+    pass
+
+
+@Power.make("Bullet speed up", "Bullets go 10% faster", 3)
+def bullet_speed_up(player):
+    pass
+
+
+@Power.make("Critical hit probability", "+10% of critical hits", 7)
+def crit_prob(player):
+    pass
+
+
+@Power.make("Critical hit damage", "+20% of damage for critical hits", 8)
+def crit_dmg(player):
+    pass
+
+
+@Power.make("Regeneration", "Regenerate 1% of life every 5s", 10)
+def regen(player):
+    pass
+
+
+@Power.make("Life up", "+10% of life", 11)
+def life_up(player):
+    pass
+
+
+@Power.make("Fire attack", "+20% probability of burning the target", 12)
+def fire_atk(player):
+    pass
+
+
+@Power.make("Fire damage", "+100% fire damage", 13)
+def fire_dmg(player):
+    pass
+
+
+@Power.make("Fire duration", "Fire last +1s", 14)
+def fire_duration(player):
+    pass
+
+
+@Power.make("Shield", "Activate shield with X.", 15)
+def shield(player):
+    pass
 
 
 class Node(Object):
@@ -38,7 +99,7 @@ class Node(Object):
         super().__init__((0, 0), (15, 15))
 
         self.parent = None
-        self.value = value
+        self.power = value
         self.children = children
 
         for child in self.children:
@@ -76,11 +137,11 @@ class Node(Object):
         for child in self.children:
             child.layout_phase2(depth + 1)
 
-        self.pos.y = depth * 40
+        self.pos.y = depth * 35
         if self.children:
             self.pos.x = (self.children[0].pos.x + self.children[-1].pos.x) / 2
         else:
-            self.pos.x = self.x_start * 40
+            self.pos.x = self.x_start * 35
 
     def draw(self, gfx: "GFX"):
 
@@ -92,16 +153,15 @@ class Node(Object):
                 (child.center.x, mid_y),
                 child.center,
             ]
-            pygame.draw.lines(gfx.surf, "white", False, points)
+            pygame.draw.lines(gfx.surf, YELLOW, False, points)
             child.draw(gfx)
 
-        gfx.surf.blit(self.value.sprite, self.pos)
+        self.power.draw(gfx, self.pos)
 
 
 SKILLTREE = Node(
-    attack_up,
-    Node(attack_up, Node(attack_up), Node(attack_up), Node(attack_up),),
-    Node(attack_up, Node(attack_up), Node(attack_up)),
-    Node(attack_up),
-    Node(attack_up),
+    bullets_up,
+    Node(life_up, Node(regen), Node(shield)),
+    Node(attack_up, Node(crit_dmg), Node(crit_prob)),
+    Node(fire_atk, Node(fire_dmg), Node(fire_duration)),
 )

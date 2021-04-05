@@ -63,7 +63,7 @@ def clamp(x, mini, maxi):
 
 
 def angle_towards(start, goal, max_movement):
-    """Return the angle towards goal that is a most max_movement for the start."""
+    """Return the angle towards goal that is a most max_movement degrees from the start angle."""
     start %= 360
     goal %= 360
 
