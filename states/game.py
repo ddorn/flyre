@@ -7,6 +7,7 @@ from engine.state_machine import State
 from engine.utils import mix, random_in_rect
 from level import LEVELS
 from objects import Planet, Player, Title
+from objects.skilltree import SKILLTREE
 
 
 class GameState(State):
@@ -18,6 +19,9 @@ class GameState(State):
         self.generate_planets(6 * (1 - DEBUG))
 
         self.player = self.add(Player((100, 200)))
+
+        self.skill_tree = SKILLTREE
+        self.skill_tree.layout((WORLD.right + 4, 20))
 
         self.inputs["horizontal"] = Axis(
             [pygame.K_a, pygame.K_LEFT], [pygame.K_d, pygame.K_RIGHT]
@@ -103,3 +107,4 @@ class GameState(State):
     def draw_info(self, gfx: GFX):
         gfx.fill(self.BG_COLOR)
         gfx.rect(0, 0, *INFO_RECT.size, YELLOW, 1)
+        self.skill_tree.draw(gfx)
