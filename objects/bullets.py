@@ -7,7 +7,9 @@ from engine.assets import font, tilemap
 from engine.object import Object, SpriteObject
 from engine.utils import bounce, from_polar, vec2int
 
-__all__ = ["Bullet", "Laser"]
+__all__ = ["Bullet", "Laser", "DebuffBullet"]
+
+from objects.skilltree import Debuff
 
 
 class BaseBullet:
@@ -100,6 +102,20 @@ class Bullet(SpriteObject, BaseBullet):
         return False
 
 
+class DebuffBullet(Bullet):
+    def __init__(
+        self, debuff: Debuff, pos, direction, owner, damage=100, speed=5, crit=False
+    ):
+        super().__init__(pos, direction, owner, damage, speed, crit)
+        self.debuff = debuff
+
+    def handle_collision(self, other, state):
+        if super().handle_collision(other, state):
+            other.debuffs.add(self.debuff)
+            return True
+        return False
+
+
 class Laser(Object, BaseBullet):
     Z = 1
 
@@ -162,20 +178,8 @@ class Laser(Object, BaseBullet):
             other.hit(self)
             start, end = p
             for _ in range(6):
-                state.particles.add(
-                    SquareParticle()
-                    .builder()
-                    .at(
-                        start + random() * (pygame.Vector2(end) - start),
-                        gauss(self.angle, 10),
-                    )
-                    .velocity(gauss(1, 0.1))
-                    .sized(uniform(1, 5))
-                    .living(30)
-                    .hsv(gauss(20, 20), gauss(1, 0.1))
-                    .anim_fade()
-                    .build()
-                )
+                pos = start + random() * (pygame.Vector2(end) - start)
+                state.particles.add_fire_particle(pos, self.angle)
             return True
         return False
 

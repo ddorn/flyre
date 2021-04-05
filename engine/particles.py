@@ -94,6 +94,19 @@ class ParticleSystem(set):
         for particle in self:
             particle.draw(surf)
 
+    def add_fire_particle(self, pos, angle):
+        self.add(
+            SquareParticle()
+            .builder()
+            .at(pos, gauss(angle, 10))
+            .velocity(gauss(1, 0.1))
+            .sized(uniform(1, 5))
+            .living(30)
+            .hsv(gauss(20, 20), gauss(1, 0.1))
+            .anim_fade()
+            .build()
+        )
+
 
 class ParticleFountain:
     def __init__(

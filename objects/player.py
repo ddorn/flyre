@@ -1,3 +1,4 @@
+from functools import partial
 from random import gauss, random
 
 import pygame
@@ -9,6 +10,8 @@ from engine.assets import font, tilemap
 from engine.pygame_input import Axis
 from engine.utils import clamp
 from objects import Bullet, SpaceShip
+from objects.bullets import DebuffBullet
+from objects.skilltree import FireDebuff
 
 
 class Player(SpaceShip):
@@ -40,9 +43,17 @@ class Player(SpaceShip):
     def fire(self, state):
 
         for pos in (self.GUN1, self.GUN2):
+            if random() < self.fire_chance:
+                bullet = partial(
+                    DebuffBullet,
+                    FireDebuff(self.fire_duration, self.fire_dmg * self.bullet_damage),
+                )
+            else:
+                bullet = Bullet
+
             crit = random() < self.crit_chance
             state.add(
-                Bullet(
+                bullet(
                     self.sprite_to_screen(pos) + (1, 0),
                     (0, -1),
                     self,

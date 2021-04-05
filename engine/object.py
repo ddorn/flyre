@@ -9,6 +9,8 @@ from .settings import settings
 
 __all__ = ["Object", "Entity", "SpriteObject"]
 
+from .utils import random_in_rect
+
 
 class Object:
     Z = 0
@@ -173,14 +175,15 @@ class Entity(SpriteObject):
         if self.life < 0:
             self.life = 0
 
-        surf = font(20).render(str(amount), False, RED)
+        surf = font(20).render(str(int(amount)), False, RED)
 
         from engine import ImageParticle
 
+        pos = random_in_rect(self.rect)
         App.current_state().particles.add(
             ImageParticle(surf)
             .builder()
-            .at(self.center, 90)
+            .at(pos, 90)
             .velocity(1)
             .sized(10)
             .anim_fade()

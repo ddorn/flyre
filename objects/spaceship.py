@@ -44,14 +44,18 @@ class SpaceShip(Entity):
         self.max_speed = 3
         self.bullet_speed = 10
         self.bullet_damage = 100
-        self.crit_chance = 0.3
+        self.crit_chance = 0.01
         self.crit_mult = 3
-        self.nb_bullets = 1
-        self.regen = 0
-        self.fire_chance = 0
+
+        self.fire_chance = 0.05
         self.fire_dmg = 0.1
-        self.fire_duration = 2
+        self.fire_duration = 2 * 60
+
+        self.regen = 0
+        self.nb_bullets = 1
         self.shield = False
+
+        self.debuffs = set()
 
     def force_to_move_towards(self, goal):
         direction = goal - self.pos
@@ -215,6 +219,16 @@ class SpaceShip(Entity):
             .anim_fade()
             .build()
         )
+
+    def logic(self, state):
+        super().logic(state)
+
+        to_remove = set()
+        for debuff in self.debuffs:
+            debuff.apply(self)
+            if debuff.done:
+                to_remove.add(debuff)
+        self.debuffs.difference_update(to_remove)
 
 
 class HorizontalBehavior(SpaceShip):

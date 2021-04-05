@@ -1,12 +1,17 @@
 from dataclasses import dataclass
-from typing import Callable
+from typing import Callable, TYPE_CHECKING
 
 import pygame
 
-from constants import YELLOW
+from constants import UPWARDS, YELLOW
 from engine import Object
 from engine.assets import tilemap
-from objects.player import Player
+from engine.utils import random_in_rect
+
+
+if TYPE_CHECKING:
+    from objects import SpaceShip
+    from objects.player import Player
 
 
 @dataclass
@@ -14,7 +19,7 @@ class Power:
     sprite_index: int
     description: str
     name: str
-    effect: Callable[[Player], None]
+    effect: Callable[["Player"], None]
     level: int = 0
 
     @classmethod
@@ -165,3 +170,33 @@ SKILLTREE = Node(
     Node(attack_up, Node(crit_dmg), Node(crit_prob)),
     Node(fire_atk, Node(fire_dmg), Node(fire_duration)),
 )
+
+
+class Debuff:
+    duration: int
+
+    def __init__(self, duration):
+        self.duration = duration
+
+    def apply(self, ship):
+        self.duration -= 1
+
+    @property
+    def done(self):
+        return self.duration <= 0
+
+
+class FireDebuff(Debuff):
+    def __init__(self, duration, damage):
+        super().__init__(duration)
+        self.damage = damage
+
+    def apply(self, ship: "SpaceShip"):
+        super().apply(ship)
+
+        if self.duration % 10 == 0:
+            ship.damage(self.damage)
+
+        for _ in range(6):
+            pos = random_in_rect(ship.rect)
+            ship.state.particles.add_fire_particle(pos, 180 + ship.angle)
