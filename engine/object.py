@@ -2,8 +2,9 @@ from functools import lru_cache
 
 import pygame
 
-from constants import RED
+from constants import GREEN, RED
 from . import App, GFX
+from .particles import ImageParticle
 from .assets import font, rotate
 from .settings import settings
 
@@ -165,15 +166,33 @@ class Entity(SpriteObject):
         self.life = max_life
         self.last_hit = 100000000
 
+    def heal(self, amount):
+        self.life += amount
+
+        surf = font(20).render(str(int(amount)), False, GREEN)
+        pos = random_in_rect(self.rect)
+        self.state.particles.add(
+            ImageParticle(surf)
+            .builder()
+            .at(pos, 90)
+            .velocity(0)
+            .sized(15)
+            .anim_fade(0.5)
+            .anim_bounce_size_and_shrink()
+            .build()
+        )
+
     def damage(self, amount):
+        if amount < 0:
+            self.heal(amount)
+            return
+
         if self.invincible:
             return
 
         self.last_hit = 0
 
         self.life -= amount
-        if self.life < 0:
-            self.life = 0
 
         surf = font(20).render(str(int(amount)), False, RED)
 
@@ -184,9 +203,10 @@ class Entity(SpriteObject):
             ImageParticle(surf)
             .builder()
             .at(pos, 90)
-            .velocity(1)
-            .sized(10)
-            .anim_fade()
+            .velocity(0)
+            .sized(15)
+            .anim_fade(0.5)
+            .anim_bounce_size_and_shrink()
             .build()
         )
 

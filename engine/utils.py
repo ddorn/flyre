@@ -1,6 +1,7 @@
+from contextlib import contextmanager
 from functools import lru_cache
 from math import exp
-from random import uniform
+from random import randrange, uniform
 from typing import Tuple
 
 import pygame
@@ -90,6 +91,33 @@ def random_in_rect(rect: pygame.Rect, x_range=(0.0, 1.0), y_range=(0.0, 1.0)):
     )
 
 
+def random_in_surface(surf: pygame.Surface, max_retries=100):
+    """Return a random point that is not transparent in a surface.
+
+    After max_retry, returns the center of the surface.
+    """
+    w, h = surf.get_size()
+    color_key = surf.get_colorkey()
+    with lock(surf):
+        for _ in range(max_retries):
+            pos = randrange(w), randrange(h)
+            color = surf.get_at(pos)
+            if not (color == color_key or color[3] == 0):
+                # Pixel is not transparent.
+                return pos
+        return (w // 2, h // 2)
+
+
+@contextmanager
+def lock(surf):
+    """A simple context manager to automatically lock and unlock the surface."""
+    surf.lock()
+    try:
+        yield
+    finally:
+        surf.unlock()
+
+
 def clamp_length(vec, maxi):
     """Scale the vector so it has a length of at most :maxi:"""
 
@@ -121,6 +149,43 @@ def prop_in_rect(rect: pygame.Rect, prop_x: float, prop_y: float):
 
 
 def bounce(x, f=0.2, k=60):
-    """Easing function that bonces over 1 and then stabilises."""
+    """Easing function that bonces over 1 and then stabilises around 1.
+
+    Graph:
+         │   /^\
+        1│  /   `------
+        0│ /
+         ┼———————————————
+           0 f        1
+
+    Args:
+        x: The time to animate, usually between 0 and 1, but can be greater than one.
+        f: Time to grow to 1
+        k: Strength of the bump after it has reached 1
+    """
+
     s = max(x - f, 0.0)
     return min(x * x / (f * f), 1 + (2.0 / f) * s * exp(-k * s))
+
+
+def exp_impulse(x, k):
+    """
+    Easing function that rises quickly to one and slowly goes back to 0.
+
+    Graph:
+        1│   /^\
+         │  /    \
+        0│ /      `-_
+         ┼————┼——————————
+           0  │    1
+              ╰ 1/k
+
+    Args:
+        x: The time to animate, usually between 0 and 1, but can be greater than one.
+        k: Control the stretching of the function
+
+    Returns: a float between 0 and 1.
+    """
+
+    h = k * x
+    return h * exp(1.0 - h)

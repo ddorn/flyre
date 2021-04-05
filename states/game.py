@@ -22,7 +22,7 @@ class GameState(State):
         self.player = self.add(Player((100, 200)))
 
         self.skill_tree = SKILLTREE
-        self.skill_tree.layout((WORLD.right + 4, 20))
+        self.skill_tree.layout((WORLD.right + 13, 20))
 
         self.inputs["horizontal"] = Axis(
             [pygame.K_a, pygame.K_LEFT], [pygame.K_d, pygame.K_RIGHT]

@@ -10,6 +10,8 @@ from engine.utils import chrange, clamp_length, from_polar, part_perp_to, random
 
 __all__ = ["SpaceShip"]
 
+from objects.skilltree import RegenDebuff
+
 
 class Cooldown:
     def __init__(self, delay):
@@ -46,13 +48,12 @@ class SpaceShip(Entity):
         self.bullet_damage = 100
         self.crit_chance = 0.01
         self.crit_mult = 3
-
-        self.fire_chance = 0.05
+        self.fire_chance = 0.1
         self.fire_dmg = 0.1
         self.fire_duration = 2 * 60
-
-        self.regen = 0
         self.nb_bullets = 1
+
+        # TODO: Not implemented !
         self.shield = False
 
         self.debuffs = set()

@@ -6,8 +6,7 @@ import pygame
 from constants import UPWARDS, YELLOW
 from engine import Object
 from engine.assets import tilemap
-from engine.utils import random_in_rect
-
+from engine.utils import random_in_rect, random_in_surface
 
 if TYPE_CHECKING:
     from objects import SpaceShip
@@ -198,5 +197,18 @@ class FireDebuff(Debuff):
             ship.damage(self.damage)
 
         for _ in range(6):
-            pos = random_in_rect(ship.rect)
+            pos = pygame.Vector2(random_in_surface(ship.image))
+            pos += ship.image.get_rect(center=ship.center).topleft
             ship.state.particles.add_fire_particle(pos, 180 + ship.angle)
+
+
+class RegenDebuff(Debuff):
+    def __init__(self, duration, strength):
+        super().__init__(duration)
+        self.strength = strength
+
+    def apply(self, ship):
+        super().apply(ship)
+
+        if self.duration % 60 == 0:
+            ship.heal(ship.max_life * self.strength)

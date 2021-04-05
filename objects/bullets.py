@@ -51,7 +51,7 @@ class Bullet(SpriteObject, BaseBullet):
 
         # noinspection PyTypeChecker
         angle = -vel.angle_to((1, 0))
-        pos += from_polar(h, angle) + from_polar(w / 2, angle + 90) - vel
+        pos += from_polar(h, angle) + from_polar(w / 2, angle - 90) - vel
         SpriteObject.__init__(self, pos, img, (0, 0), img.get_size(), vel, 90 - angle)
 
     def logic(self, state):

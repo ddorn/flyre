@@ -21,6 +21,8 @@ __all__ = [
     "ShardParticle",
 ]
 
+from engine.utils import bounce, exp_impulse
+
 pygame.init()
 
 DEGREES = float
@@ -244,6 +246,32 @@ class Particle:
 
             return self.anim(bounce_rect)
 
+        def anim_shrink(self):
+            initial_size = self._p.size
+
+            def shrink(particle):
+                particle.size = initial_size * (1 - particle.life_prop)
+
+            return self.anim(shrink)
+
+        def anim_bounce_size(self, increase_duration=0.3, k=10):
+            initial_size = self._p.size
+
+            def bounce_size(particle):
+                particle.size = (
+                    bounce(particle.life_prop, increase_duration, k) * initial_size
+                )
+
+            return self.anim(bounce_size)
+
+        def anim_bounce_size_and_shrink(self, stretch=5):
+            initial_size = self._p.size
+
+            def bounce_size_and_shrink(particle):
+                particle.size = exp_impulse(particle.life_prop, stretch) * initial_size
+
+            return self.anim(bounce_size_and_shrink)
+
         def apply(self, func):
             """Call a building function on the particle. Useful to factor parts of the build."""
             func(self)
@@ -301,14 +329,6 @@ class DrawnParticle(Particle):
             value = clamp(0, 100, round(100 * value))
             self._p.color.hsva = (hue, saturation, value, 100)
             return self
-
-        def anim_shrink(self):
-            initial_size = self._p.size
-
-            def shrink(particle):
-                particle.size = initial_size * (1 - particle.life_prop)
-
-            return self.anim(shrink)
 
     def builder(self):
         # the method is here only for type hinting
@@ -451,21 +471,11 @@ class ImageParticle(Particle):
 
         surf.blit(self.surf, self.surf.get_rect(center=self.pos))
 
-    class Builder(Particle.Builder):
-        def anim_shrink(self):
-            initial_size = self._p.size
-
-            def shrink(particle):
-                size = initial_size * (1 - particle.life_prop)
-                if size != int(particle.size):
-                    particle.need_redraw = True
-                    particle.size = size
-
-            return self.anim(shrink)
-
-    def builder(self):
-        # the method is here only for type hinting
-        return self.Builder(self)
+    def logic(self):
+        last_size = self.size
+        super(ImageParticle, self).logic()
+        if int(last_size) != int(self.size):
+            self.need_redraw = True
 
 
 def main():
