@@ -1,13 +1,12 @@
 from random import shuffle, uniform
 
-import pygame
-
-from constants import DEBUG, INFO_RECT, WORLD, YELLOW
+from constants import *
 from engine import GFX, ParticleFountain, SquareParticle
 from engine.pygame_input import Axis, Button
 from engine.state_machine import State
 from engine.utils import mix, random_in_rect
-from objects import LaserEnemy, Planet, Player
+from level import LEVELS
+from objects import Planet, Player, Title
 
 
 class GameState(State):
@@ -19,7 +18,6 @@ class GameState(State):
         self.generate_planets(6 * (1 - DEBUG))
 
         self.player = self.add(Player((100, 200)))
-        self.add(LaserEnemy((20, 20)))
 
         self.inputs["horizontal"] = Axis(
             [pygame.K_a, pygame.K_LEFT], [pygame.K_d, pygame.K_RIGHT]
@@ -52,6 +50,8 @@ class GameState(State):
             )
         )
 
+        self.running_script = self.script()
+
     def generate_planets(self, nb):
         positions = []
         possibilities = list(range(Planet.TOTAL_PLANETS))
@@ -76,7 +76,22 @@ class GameState(State):
             bg = mix(self.BG_COLORS[first], self.BG_COLORS[second], t)
 
             self.BG_COLOR = bg
+
+            next(self.running_script)
             super().logic()
+
+    def script(self):
+        for i, level in enumerate(LEVELS):
+            # Draw level name
+            yield from self.add(Title(f"Level {i + 1}")).wait_until_dead()
+
+            # Run the level
+            yield from level(self).script()
+
+            # Write cleared
+            yield from self.add(
+                Title("Level cleared", GREEN, animation="blink")
+            ).wait_until_dead()
 
     def draw(self, gfx: "GFX"):
         gfx.surf.set_clip(WORLD)

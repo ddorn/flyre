@@ -105,3 +105,15 @@ def part_perp_to(u, v):
 
     v = v.normalize()
     return u - v * v.dot(u)
+
+
+def prop_in_rect(rect: pygame.Rect, prop_x: float, prop_y: float):
+    """Return the point in a rectangle defined by the proportion.
+
+    Examples:
+        (0, 0) => topleft
+        (1/3, 1/3) => point at the first third of the rect
+        (-1, 0) => point on the top-line and one width on the leftj
+    """
+
+    return rect.x - rect.w * prop_x, rect.y - rect.h * prop_y

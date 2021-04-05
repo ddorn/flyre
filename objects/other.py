@@ -9,17 +9,19 @@ from constants import ANIMATIONS, DEBUG, WORLD, YELLOW
 from engine import (
     Animation,
     App,
+    GFX,
     ImageParticle,
     Object,
+    SpriteObject,
     SquareParticle,
 )
 from engine.assets import font, tilemap
 from engine.object import Entity
 from engine.pygame_input import Axis
-from engine.utils import random_in_rect, clamp
+from engine.utils import chrange, random_in_rect, clamp
 
 
-__all__ = ["Planet", "Player", "Debug"]
+__all__ = ["Planet", "Player", "Debug", "Title"]
 
 
 class Player(Entity):
@@ -212,3 +214,90 @@ class Debug(Object):
         self.points = []
         self.vectors = []
         self.rects = []
+
+
+class Title(Object):
+    def __init__(self, text, color=YELLOW, duration=4 * 60, animation="enlarge"):
+        self.duration = duration
+        self.color = color
+        self.bg_rect = pygame.Rect(0, 0, 0, 3)
+
+        surf = font(42).render(text, True, color)
+        rect = surf.get_rect(center=WORLD.center)
+
+        self.text_surf = surf
+        self.shown_image = pygame.Surface((0, 0))
+        super().__init__(rect.topleft, surf.get_size())
+        self.scripts = {getattr(self, animation)()}
+
+    def enlarge(self):
+        widen_frames = 40
+        for i in range(widen_frames):
+            self.bg_rect.width = (WORLD.width + 2) * chrange(
+                i, (0, widen_frames - 1), (0, 1)
+            )
+            self.bg_rect.center = self.center
+            yield
+
+        larger_frames = 20
+        for i in range(larger_frames):
+            self.bg_rect.height = (self.size.y + 10) * chrange(
+                i, (0, larger_frames - 1), (0, 1)
+            )
+            self.bg_rect.center = self.center
+            yield
+
+        text_appear_frames = 40
+        for i in range(text_appear_frames):
+            r = self.text_surf.get_rect()
+            r.inflate_ip(
+                -r.w * chrange(i, (0, text_appear_frames), (0, 1), flipped=True), 0
+            )
+            self.shown_image = self.text_surf.subsurface(r)
+            yield
+
+        for i in range(self.duration):
+            if i % 60 < 45:
+                self.shown_image = self.text_surf
+            else:
+                self.shown_image = pygame.Surface((0, 0))
+            yield
+
+        for i in range(larger_frames):
+            self.bg_rect.height = (self.size.y + 10) * chrange(
+                i, (0, larger_frames - 1), (0, 1), flipped=True
+            )
+            self.bg_rect.center = self.center
+            self.shown_image = self.text_surf.subsurface(
+                self.text_surf.get_rect().inflate(
+                    0, -self.size.y * chrange(i, (0, larger_frames - 1), (0, 1)),
+                )
+            )
+            yield
+
+        for i in range(widen_frames):
+            self.bg_rect.width = (WORLD.width + 2) * chrange(
+                i, (0, widen_frames - 1), (0, 1), flipped=True
+            )
+            self.bg_rect.center = self.center
+            yield
+
+    def blink(self):
+        for i in range(self.duration):
+            if i % 60 < 45:
+                self.shown_image = self.text_surf
+            else:
+                self.shown_image = pygame.Surface((0, 0))
+            yield
+
+    def logic(self, state):
+        super().logic(state)
+
+        if not self.scripts:
+            self.alive = False
+
+    def draw(self, gfx: "GFX"):
+        super().draw(gfx)
+        gfx.box(self.bg_rect, (0, 0, 0, 80))
+        gfx.rect(*self.bg_rect, self.color, 1)
+        gfx.blit(self.shown_image, center=self.center)

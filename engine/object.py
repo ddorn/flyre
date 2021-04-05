@@ -24,6 +24,10 @@ class Object:
     def script(self):
         yield
 
+    def wait_until_dead(self):
+        while self.alive:
+            yield
+
     @property
     def center(self):
         return self.pos + self.size / 2

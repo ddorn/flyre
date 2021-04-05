@@ -98,6 +98,11 @@ class GFX:
 
         pygame.draw.rect(self.surf, color, r, width)
 
+    def box(self, rect, color):
+        rect = pygame.Rect(rect)
+        rect.topleft += self.translation
+        pygame.gfxdraw.box(self.surf, rect, color)
+
     def grid(self, surf, pos, blocks, steps, color=(255, 255, 255, 100)):
         """
         Draw a grid in world space.

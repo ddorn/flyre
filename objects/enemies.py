@@ -19,9 +19,7 @@ class Enemy(SpaceShip):
     OFFSET = (-8, -9)
     SIZE = Vector2(17, 17) * SCALE
 
-    def __init__(self, pos, kind=None):
-        if kind is None:
-            kind = randrange(0, 3)
+    def __init__(self, pos, kind=0):
         image = tilemap("spaceships", kind, 1, 32)
         super().__init__(pos, image, self.OFFSET, self.SIZE, rotation=180)
         # self.behavior = StationaryMultipleShooter(self)
@@ -54,9 +52,6 @@ class Enemy(SpaceShip):
         if self.life <= 0 and bullet.owner is player:
             player.did_kill(self)
 
-    def on_death(self, state):
-        state.add(LaserEnemy((uniform(WORLD.left, WORLD.right), -30)))
-
 
 class LaserEnemy(Enemy):
     GUN = (16.5, 7)
@@ -86,6 +81,9 @@ class ChargeEnemy(Enemy):
     SIZE = Vector2(22, 18) * Enemy.SCALE
     OFFSET = (-6, -8)
     GUN = (16.5, 13)
+
+    def __init__(self, pos):
+        super().__init__(pos, 1)
 
     def script(self):
         yield from self.go_to()
