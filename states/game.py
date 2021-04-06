@@ -1,10 +1,12 @@
+from pygame import Vector2
 from random import shuffle, uniform
 
 from constants import *
 from engine import GFX, ParticleFountain, SquareParticle
+from engine.assets import font, image
 from engine.pygame_input import Axis, Button
 from engine.state_machine import State
-from engine.utils import mix, random_in_rect
+from engine.utils import auto_crop, mix, random_in_rect
 from level import LEVELS
 from objects import Planet, Title
 from objects.player import Player
@@ -22,7 +24,7 @@ class GameState(State):
         self.player = self.add(Player((100, 200)))
 
         self.skill_tree = SKILLTREE
-        self.skill_tree.layout((WORLD.right + 13, 20))
+        self.skill_tree.layout((WORLD.right + 9, 201))
 
         self.inputs["horizontal"] = Axis(
             [pygame.K_a, pygame.K_LEFT], [pygame.K_d, pygame.K_RIGHT]
@@ -99,13 +101,15 @@ class GameState(State):
             ).wait_until_dead()
 
     def draw(self, gfx: "GFX"):
-        gfx.surf.set_clip(WORLD)
         super().draw(gfx)
-
-        with gfx.focus(INFO_RECT):
-            self.draw_info(gfx)
+        self.draw_info(gfx)
 
     def draw_info(self, gfx: GFX):
-        gfx.fill(self.BG_COLOR)
-        gfx.rect(0, 0, *INFO_RECT.size, YELLOW, 1)
+        bg = image("inforect")
+        gfx.surf.blit(bg, INFO_RECT)
+
+        # The score
+        score = auto_crop(font(20).render(str(self.player.score), False, YELLOW))
+        gfx.blit(score, bottomright=INFO_RECT.topleft + Vector2(197, 34))
+
         self.skill_tree.draw(gfx)

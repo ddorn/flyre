@@ -10,8 +10,6 @@ from engine.utils import chrange, clamp_length, from_polar, part_perp_to, random
 
 __all__ = ["SpaceShip"]
 
-from objects.skilltree import RegenDebuff
-
 
 class Cooldown:
     def __init__(self, delay):

@@ -5,7 +5,7 @@ from constants import *
 from engine import ImageParticle, LineParticle, SquareParticle
 from engine.assets import font, tilemap
 from engine.object import Object, SpriteObject
-from engine.utils import bounce, from_polar, vec2int
+from engine.utils import auto_crop, bounce, from_polar, vec2int
 
 __all__ = ["Bullet", "Laser", "DebuffBullet"]
 
@@ -41,9 +41,7 @@ class Bullet(SpriteObject, BaseBullet):
     def __init__(self, pos, direction, owner, damage=100, speed=5, crit=False):
         BaseBullet.__init__(self, owner, damage, speed, crit)
 
-        img = tilemap("sprites", 0, 0, 16)
-        rect = img.get_bounding_rect()
-        img = img.subsurface(rect)
+        img = auto_crop(tilemap("sprites", 0, 0, 16))
 
         vel = pygame.Vector2(direction)
         vel.scale_to_length(self.speed)

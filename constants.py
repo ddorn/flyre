@@ -5,8 +5,9 @@ import pygame
 SIZE = (640, 360)
 W, H = SIZE
 
-WORLD = pygame.Rect(0, 0, W * 2 / 3, H)
+WORLD = pygame.Rect(0, 0, W - 208, H)
 INFO_RECT = pygame.Rect(WORLD.right, 0, W - WORLD.right, H)
+assert INFO_RECT.width == 208
 
 YELLOW = (255, 224, 145)
 RED = (221, 55, 69)

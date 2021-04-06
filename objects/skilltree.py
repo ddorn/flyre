@@ -43,58 +43,65 @@ class Power:
         gfx.surf.blit(self.sprite, r)
 
 
-@Power.make("Attack up", "+10% damage to enemies", 0)
+@Power.make("Attack up", "+20% damage to enemies", 0)
 def attack_up(player):
-    player.attack *= 1.1
+    player.bullet_damage *= 1.2
 
 
 @Power.make("Bullets up", "Shoot one more bullet.", 1)
 def bullets_up(player):
-    pass
+    player.nb_bullets += 1
 
 
 @Power.make("Bullet speed up", "Bullets go 10% faster", 3)
 def bullet_speed_up(player):
-    pass
+    player.bullet_speed *= 1.1
 
 
-@Power.make("Critical hit probability", "+10% of critical hits", 7)
+@Power.make("Critical hit probability", "+1% of critical hits", 7)
 def crit_prob(player):
-    pass
+    player.crit_chance += 0.01
 
 
-@Power.make("Critical hit damage", "+20% of damage for critical hits", 8)
+@Power.make("Critical hit damage", "+1 to critical hit damage multiplier", 8)
 def crit_dmg(player):
-    pass
+    player.crit_mult += 0.5
 
 
 @Power.make("Regeneration", "Regenerate 1% of life every 5s", 10)
 def regen(player):
-    pass
+    for buff in player.debuffs:
+        if isinstance(buff, RegenDebuff):
+            buff.strength += 0.01
+            return
+    player.debuffs.add(RegenDebuff(1000000000000000, 0.01))
 
 
 @Power.make("Life up", "+10% of life", 11)
 def life_up(player):
-    pass
+    to_add = player.max_life * 0.1
+    player.max_life += to_add
+    player.life += to_add
 
 
-@Power.make("Fire attack", "+20% probability of burning the target", 12)
+@Power.make("Fire attack", "+2% probability of burning the target", 12)
 def fire_atk(player):
-    pass
+    player.fire_chance += 0.02
 
 
-@Power.make("Fire damage", "+100% fire damage", 13)
+@Power.make("Fire damage", "+1 to the fire damage multiplier", 13)
 def fire_dmg(player):
-    pass
+    player.fire_dmg += 0.1  # this is not a typo, the base multipler is 0.1, not 1.
 
 
-@Power.make("Fire duration", "Fire last +1s", 14)
+@Power.make("Fire duration", "Fire last +0.5s", 14)
 def fire_duration(player):
-    pass
+    player.fire_duration += 30
 
 
 @Power.make("Shield", "Activate shield with X.", 15)
 def shield(player):
+    # TODO: idk how to do the shield
     pass
 
 

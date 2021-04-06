@@ -106,8 +106,6 @@ class Player(SpaceShip):
 
     def draw(self, gfx):
         super().draw(gfx)
-        score = font(20).render(str(self.score), False, YELLOW)
-        gfx.blit(score, topleft=WORLD.topleft + Vector2(10, 7))
 
     def did_kill(self, enemy):
         bonus = 100

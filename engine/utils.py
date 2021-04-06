@@ -1,7 +1,8 @@
 from contextlib import contextmanager
 from functools import lru_cache
-from math import exp
-from random import randrange, uniform
+from math import cos, exp, sin
+from random import random, randrange, uniform
+from time import time
 from typing import Tuple
 
 import pygame
@@ -189,3 +190,10 @@ def exp_impulse(x, k):
 
     h = k * x
     return h * exp(1.0 - h)
+
+
+def auto_crop(surf: pygame.Surface):
+    """Return the smallest subsurface of an image that contains all the visible pixels."""
+
+    rect = surf.get_bounding_rect()
+    return surf.subsurface(rect)
