@@ -11,7 +11,7 @@ from engine.pygame_input import Axis
 from engine.utils import clamp
 from objects import Bullet, SpaceShip
 from objects.bullets import DebuffBullet
-from objects.skilltree import FireDebuff, RegenDebuff
+from objects.skilltree import build_skill_tree, FireDebuff, RegenDebuff
 
 
 class Player(SpaceShip):
@@ -33,6 +33,7 @@ class Player(SpaceShip):
         image = tilemap("spaceships", 0, 0)
 
         self.score = 0
+        self.skill_tree = build_skill_tree()
 
         super().__init__(pos, image, self.OFFSET, self.SIZE)
         self.max_speed = 5

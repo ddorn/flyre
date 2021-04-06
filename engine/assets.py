@@ -1,8 +1,5 @@
-import itertools
 import json
-from bisect import bisect_left, bisect_right
 from functools import lru_cache
-from pathlib import Path
 
 import pygame
 
@@ -20,6 +17,12 @@ def rotate(image, degrees):
     return pygame.transform.rotate(image, degrees)
 
 
+@lru_cache(1000)
+def scale(image, factor):
+    size = factor * image.get_width(), factor * image.get_height()
+    return pygame.transform.scale(image, size)
+
+
 @lru_cache()
 def font(size: int, name: str = None):
     name = name or "Wellbutrin"
@@ -30,6 +33,25 @@ def font(size: int, name: str = None):
 @lru_cache(10000)
 def text(txt, size, color, name=None):
     return font(size, name).render(txt, False, color)
+
+
+@lru_cache(1000)
+def colored_text(size, *parts, name=None):
+    surfaces = []
+    for txt, color in parts:
+        s = text(txt, size, color, name)
+        surfaces.append(s)
+
+    w = sum(s.get_width() for s in surfaces)
+    h = max(s.get_height() for s in surfaces)
+    output = pygame.Surface((w, h))
+
+    x = 0
+    for surf in surfaces:
+        output.blit(surf, (x, 0))
+        x += surf.get_width()
+
+    return output
 
 
 @lru_cache()

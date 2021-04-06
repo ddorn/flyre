@@ -10,8 +10,9 @@ from engine.utils import auto_crop, mix, random_in_rect
 from level import LEVELS
 from objects import Planet, Title
 from objects.player import Player
-from objects.skilltree import SKILLTREE
+from objects.skilltree import build_skill_tree
 from states.my_state import MyState
+from states.skillpickup import SkillPickUp
 
 
 class GameState(MyState):
@@ -19,9 +20,6 @@ class GameState(MyState):
         super().__init__()
 
         self.player = self.add(Player((100, 200)))
-
-        self.skill_tree = SKILLTREE
-        self.skill_tree.layout((WORLD.right + 9, 201))
 
         self.running_script = self.script()
 
@@ -75,6 +73,8 @@ class GameState(MyState):
                 Title("Level cleared", GREEN, animation="blink")
             ).wait_until_dead()
 
+            self.next_state = SkillPickUp(self.player)
+
     def draw(self, gfx: "GFX"):
         super().draw(gfx)
         self.draw_info(gfx)
@@ -87,4 +87,5 @@ class GameState(MyState):
         score = auto_crop(font(20).render(str(self.player.score), False, YELLOW))
         gfx.blit(score, bottomright=INFO_RECT.topleft + Vector2(197, 34))
 
-        self.skill_tree.draw(gfx)
+        self.player.skill_tree.layout((INFO_RECT.centerx, 209))
+        self.player.skill_tree.draw(gfx)

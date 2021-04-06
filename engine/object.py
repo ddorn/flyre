@@ -10,7 +10,7 @@ from .settings import settings
 
 __all__ = ["Object", "Entity", "SpriteObject"]
 
-from .utils import random_in_rect
+from .utils import overlay, random_in_rect
 
 
 class Object:
@@ -225,7 +225,7 @@ class Entity(SpriteObject):
     def draw(self, gfx):
         if self.last_hit < 3:
             gfx.surf.blit(
-                self.red_image(self.image),
+                overlay(self.image, RED),
                 self.image.get_rect(center=self.sprite_center),
             )
             return
@@ -234,15 +234,6 @@ class Entity(SpriteObject):
             return  # no blit
 
         super().draw(gfx)
-
-    @staticmethod
-    @lru_cache(1000)
-    def red_image(image: pygame.Surface):
-        img = image.copy()
-        mask = pygame.mask.from_surface(img)
-        img = mask.to_surface(setcolor=RED)
-        img.set_colorkey((0, 0, 0))
-        return img
 
     @property
     def invincible(self):

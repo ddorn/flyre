@@ -85,6 +85,8 @@ class GFX:
         r.topleft += self.translation
         self.surf.blit(surf, r)
 
+        return r
+
     # Draw functions
 
     def rect(self, x, y, w, h, color, width=0, anchor: str = None):
@@ -130,10 +132,12 @@ class GFX:
         self.surf.scroll(dx, dy)
 
     @contextmanager
-    def focus(self, rect: pygame.Rect):
+    def focus(self, rect):
         """Set the draw rectangle with clip, and translate all draw calls
         so that (0, 0) is the topleft of the given rectangle.
         """
+
+        rect = pygame.Rect(rect)
 
         previous_clip = self.surf.get_clip()
         self.surf.set_clip(rect)

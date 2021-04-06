@@ -1,8 +1,10 @@
 from constants import ORANGE, W
 from engine import App
 from objects.other import Menu, Text
+from objects.player import Player
 from states import GameState
 from states.my_state import MyState
+from states.skillpickup import SkillPickUp
 
 
 class MenuState(MyState):
@@ -14,13 +16,10 @@ class MenuState(MyState):
             Menu(
                 (W / 2, 150),
                 {
-                    "Play": self.play,
-                    "Highscores": lambda: 0,
+                    "Play": self.go_to_callback(GameState),
+                    "Highscores": self.go_to_callback(SkillPickUp, Player((0, 0))),
                     "Settings": lambda: 0,
                     "Quit": App.MAIN_APP.quit,
                 },
             )
         )
-
-    def play(self):
-        self.next_state = GameState()

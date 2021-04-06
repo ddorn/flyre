@@ -1,12 +1,13 @@
 from dataclasses import dataclass
-from typing import Callable, TYPE_CHECKING
+from functools import partial
+from typing import Callable, List, Optional, TYPE_CHECKING
 
 import pygame
 
-from constants import UPWARDS, YELLOW
+from constants import YELLOW
 from engine import Object
-from engine.assets import tilemap
-from engine.utils import random_in_rect, random_in_surface
+from engine.assets import scale, tilemap
+from engine.utils import outline, overlay, random_in_surface
 
 if TYPE_CHECKING:
     from objects import SpaceShip
@@ -20,11 +21,16 @@ class Power:
     name: str
     effect: Callable[["Player"], None]
     level: int = 0
+    selected: bool = False
+
+    def apply(self, player):
+        self.effect(player)
+        self.level += 1
 
     @classmethod
     def make(cls, name, description, sprite_index):
         def wrapper(effect):
-            return cls(sprite_index, description, name, effect)
+            return partial(cls, sprite_index, description, name, effect)
 
         return wrapper
 
@@ -36,11 +42,19 @@ class Power:
     def background(self):
         return tilemap("sprites", 0, 3, 32)
 
-    def draw(self, gfx, pos):
+    def draw(self, gfx, center, scaling=1, darken=False):
         bg = self.background
-        r = self.sprite.get_rect(topleft=pos)
-        gfx.surf.blit(bg, bg.get_rect(center=r.center))
-        gfx.surf.blit(self.sprite, r)
+        bg = scale(bg, scaling)
+        if self.selected:
+            bg = outline(bg)
+            bg = outline(bg)
+
+        fg = scale(self.sprite, scaling)
+        if darken:
+            fg = overlay(fg, (0, 0, 0), 150)
+        r = fg.get_rect(center=center)
+        gfx.surf.blit(bg, bg.get_rect(center=center))
+        gfx.surf.blit(fg, r)
 
 
 @Power.make("Attack up", "+20% damage to enemies", 0)
@@ -77,9 +91,9 @@ def regen(player):
     player.debuffs.add(RegenDebuff(1000000000000000, 0.01))
 
 
-@Power.make("Life up", "+10% of life", 11)
+@Power.make("Life up", "+20% of life", 11)
 def life_up(player):
-    to_add = player.max_life * 0.1
+    to_add = player.max_life * 0.2
     player.max_life += to_add
     player.life += to_add
 
@@ -106,12 +120,12 @@ def shield(player):
 
 
 class Node(Object):
-    def __init__(self, value: Power, *children: "Node"):
+    def __init__(self, value, *children: "Node"):
         super().__init__((0, 0), (15, 15))
 
-        self.parent = None
-        self.power = value
-        self.children = children
+        self.parent: Optional[Node] = None
+        self.power: Power = value()
+        self.children: List[Node] = list(children)
 
         for child in self.children:
             child.parent = self
@@ -120,17 +134,21 @@ class Node(Object):
         self.x_start = 0
         self.x_end = 0
 
+    def __repr__(self):
+        return f"Node({self.power.name}, {len(self.children)} children)"
+
     def bfs(self):
         yield self
         for child in self.children:
             yield from child.bfs()
 
-    def layout(self, topleft):
+    def layout(self, root_center, spacing_x=35, spacing_y=35):
         self.layout_phase1()
-        self.layout_phase2()
+        self.layout_phase2(spacing_x, spacing_y)
 
+        displacement = root_center - self.center
         for node in self.bfs():
-            node.pos += topleft
+            node.pos += displacement
 
     def layout_phase1(self):
         x = self.x_start
@@ -144,18 +162,17 @@ class Node(Object):
         else:
             self.x_end = self.x_start
 
-    def layout_phase2(self, depth=0):
+    def layout_phase2(self, spacing_x, spacing_y, depth=0):
         for child in self.children:
-            child.layout_phase2(depth + 1)
+            child.layout_phase2(spacing_x, spacing_y, depth + 1)
 
-        self.pos.y = depth * 35
+        self.pos.y = depth * spacing_y
         if self.children:
             self.pos.x = (self.children[0].pos.x + self.children[-1].pos.x) / 2
         else:
-            self.pos.x = self.x_start * 35
+            self.pos.x = self.x_start * spacing_x
 
-    def draw(self, gfx: "GFX"):
-
+    def draw(self, gfx: "GFX", scale=1):
         for child in self.children:
             mid_y = (self.center.y + child.center.y) / 2
             points = [
@@ -165,17 +182,21 @@ class Node(Object):
                 child.center,
             ]
             pygame.draw.lines(gfx.surf, YELLOW, False, points)
-            child.draw(gfx)
+            child.draw(gfx, scale)
 
-        self.power.draw(gfx, self.pos)
+        self.power.draw(gfx, self.center, scale, not self.reachable())
+
+    def reachable(self):
+        return self.parent is None or self.parent.power.level > 0
 
 
-SKILLTREE = Node(
-    bullets_up,
-    Node(life_up, Node(regen), Node(shield)),
-    Node(attack_up, Node(crit_dmg), Node(crit_prob)),
-    Node(fire_atk, Node(fire_dmg), Node(fire_duration)),
-)
+def build_skill_tree():
+    return Node(
+        bullets_up,
+        Node(life_up, Node(regen), Node(shield)),
+        Node(attack_up, Node(crit_dmg), Node(crit_prob)),
+        Node(fire_atk, Node(fire_dmg), Node(fire_duration)),
+    )
 
 
 class Debuff:

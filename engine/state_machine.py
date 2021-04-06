@@ -146,6 +146,12 @@ class State:
         assert frames >= 0
         self.shake += frames
 
+    def go_to_callback(self, other_state: Type["State"], *args):
+        def callback(*_):
+            self.next_state = other_state(*args)
+
+        return callback
+
     def update_bg(self):
         if self.BG_COLORS:
             first = self.timer // self.BG_TRANSITION_TIME % len(self.BG_COLORS)

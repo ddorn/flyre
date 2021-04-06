@@ -197,3 +197,36 @@ def auto_crop(surf: pygame.Surface):
 
     rect = surf.get_bounding_rect()
     return surf.subsurface(rect)
+
+
+def outline(surf: pygame.Surface, color=(255, 255, 255)):
+    """Create an outline on the surface of the biven color."""
+
+    mask = pygame.mask.from_surface(surf)
+    outline = mask.outline()
+    output = pygame.Surface((surf.get_width() + 2, surf.get_height() + 2))
+
+    with lock(output):
+        for x, y in outline:
+            for dx, dy in ((0, 1), (1, 0), (-1, 0), (0, -1)):
+                output.set_at((x + dx + 1, y + dy + 1), color)
+
+    output.blit(surf, (1, 1))
+
+    output.set_colorkey(surf.get_colorkey())
+
+    return output
+
+
+@lru_cache(1000)
+def overlay(image: pygame.Surface, color, alpha=255):
+    img = pygame.Surface(image.get_size())
+    img.set_colorkey((0, 0, 0))
+    img.blit(image, (0, 0))
+
+    mask = pygame.mask.from_surface(image)
+    overlay = mask.to_surface(setcolor=color, unsetcolor=(255, 255, 0, 0))
+    overlay.set_alpha(alpha)
+    img.blit(overlay, (0, 0))
+
+    return img
