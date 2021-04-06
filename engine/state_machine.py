@@ -1,5 +1,5 @@
 from random import randint
-from typing import Type, TypeVar, Union
+from typing import Optional, Type, TypeVar, Union
 
 import pygame
 from pygame.locals import *
@@ -30,15 +30,28 @@ class State:
         self.debug = self.add(Debug())
 
         self.inputs = Inputs()
-        self.inputs["quit"] = Button(QuitEvent(), K_ESCAPE, K_q)
-        self.inputs["quit"].on_press(lambda e: setattr(self, "next_state", None))
 
-        self.inputs["debug"] = Button(K_F11)
-        self.inputs["debug"].on_press(self.debug.toggle)
+    def create_inputs(self):
+        inputs = Inputs()
+        inputs["quit"] = Button(QuitEvent(), K_ESCAPE, K_q)
+        inputs["quit"].on_press(lambda e: setattr(self, "next_state", None))
+
+        inputs["debug"] = Button(K_F11)
+        inputs["debug"].on_press(self.debug.toggle)
+
+        for object in self.objects:
+            obj_inputs = object.create_inputs()
+            if not set(inputs).isdisjoint(obj_inputs):
+                raise ValueError("Conflicting key inputs.")
+
+            inputs.update(object.create_inputs())
+
+        return inputs
 
     # Life phase of state
 
     def on_resume(self):
+        self.inputs = self.create_inputs()
         self.next_state = self
         if self.BG_MUSIC:
             pygame.mixer.music.load(self.BG_MUSIC)
@@ -132,24 +145,34 @@ class State:
 class StateMachine:
     def __init__(self, initial_state: Type[State]):
         self._state: Union[State, None] = None
+        self.stack = []
         self.state = initial_state()
-        self.running = True
+
+    @property
+    def running(self):
+        return len(self.stack) > 0
 
     @property
     def state(self) -> Union[State, None]:
-        """Current state. Setting to None terminates the app."""
-        return self._state
+        """Current state. Setting to None terminates the last state."""
+        if self.stack:
+            return self.stack[-1]
+        return None
 
     @state.setter
-    def state(self, value: State):
-        if value is self._state:
+    def state(self, value: Optional[State]):
+        previous = self.state
+        if value is previous:
             return
 
-        if self._state is not None:
-            self._state.on_exit()
+        if previous is not None:
+            previous.on_exit()
 
         if value is None:
-            self.running = False
+            if self.stack:
+                self.stack.pop()
+            if self.stack:
+                self.state.on_resume()
         else:
-            self._state = value
-            self._state.on_resume()
+            self.stack.append(value)
+            value.on_resume()

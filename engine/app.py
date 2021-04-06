@@ -2,6 +2,7 @@ from time import time
 from typing import Type
 
 import pygame
+import sys
 
 from .gfx import GFX
 from .screen import ExtendFieldOfViewScreen, Screen
@@ -81,6 +82,14 @@ class App(StateMachine):
     def current_state(cls):
         """Current state of the main app."""
         return cls.MAIN_APP.state
+
+    def quit(self):
+        """Properly exit the app."""
+
+        while self.stack:
+            self.state = None
+
+        sys.exit()
 
 
 if __name__ == "__main__":

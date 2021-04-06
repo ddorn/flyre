@@ -5,6 +5,7 @@ import pygame
 SIZE = (640, 360)
 W, H = SIZE
 
+SCREEN = pygame.Rect(0, 0, W, H)
 WORLD = pygame.Rect(0, 0, W - 208, H)
 INFO_RECT = pygame.Rect(WORLD.right, 0, W - WORLD.right, H)
 assert INFO_RECT.width == 208

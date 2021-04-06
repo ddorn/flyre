@@ -18,6 +18,7 @@ class GameState(State):
 
     def __init__(self):
         super().__init__()
+        self.paused = False
 
         self.generate_planets(6 * (1 - DEBUG))
 
@@ -25,23 +26,6 @@ class GameState(State):
 
         self.skill_tree = SKILLTREE
         self.skill_tree.layout((WORLD.right + 9, 201))
-
-        self.inputs["horizontal"] = Axis(
-            [pygame.K_a, pygame.K_LEFT], [pygame.K_d, pygame.K_RIGHT]
-        )
-        self.inputs["horizontal"].always_call(self.player.move_horizontally)
-
-        self.inputs["vertical"] = Axis(
-            [pygame.K_w, pygame.K_UP], [pygame.K_s, pygame.K_DOWN]
-        )
-        self.inputs["vertical"].always_call(self.player.move_vertically)
-
-        self.inputs["fire"] = Button(pygame.K_SPACE)
-        self.inputs["fire"].on_press_repeated(lambda _: self.player.fire(self), 0.1)
-
-        self.paused = False
-        self.inputs["pause"] = Button(pygame.K_p)
-        self.inputs["pause"].on_press(self.toggle_pause)
 
         self.particles.fountains.append(
             ParticleFountain(
@@ -59,6 +43,26 @@ class GameState(State):
 
         self.running_script = self.script()
 
+    def create_inputs(self):
+        inputs = super().create_inputs()
+        inputs["horizontal"] = Axis(
+            [pygame.K_a, pygame.K_LEFT], [pygame.K_d, pygame.K_RIGHT]
+        )
+        inputs["horizontal"].always_call(self.player.move_horizontally)
+
+        inputs["vertical"] = Axis(
+            [pygame.K_w, pygame.K_UP], [pygame.K_s, pygame.K_DOWN]
+        )
+        inputs["vertical"].always_call(self.player.move_vertically)
+
+        inputs["fire"] = Button(pygame.K_SPACE)
+        inputs["fire"].on_press_repeated(lambda _: self.player.fire(self), 0.1)
+
+        inputs["pause"] = Button(pygame.K_p)
+        inputs["pause"].on_press(self.set_pause)
+
+        return inputs
+
     def generate_planets(self, nb):
         positions = []
         possibilities = list(range(Planet.TOTAL_PLANETS))
@@ -70,9 +74,17 @@ class GameState(State):
                 self.add(planet)
                 positions.append(planet.pos)
 
-    def toggle_pause(self, *args):
-        self.paused = not self.paused
-        self.debug.paused = self.paused
+    def set_pause(self, *args):
+        from states.pause import PauseState
+
+        self.next_state = PauseState(self)
+
+    def on_resume(self):
+        super().on_resume()
+        self.debug.paused = False
+
+    def on_exit(self):
+        self.debug.paused = True
 
     def logic(self):
         if not self.paused:

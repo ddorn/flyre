@@ -26,6 +26,11 @@ def font(size: int, name: str = "Wellbutrin"):
     return pygame.font.Font(file, size)
 
 
+@lru_cache(10000)
+def text(txt, size, color, name="Wellbutrin"):
+    return font(size, name).render(txt, False, color)
+
+
 @lru_cache()
 def tilemap(name, x, y, tile_size=32):
     img = image(name)
@@ -51,8 +56,6 @@ class Animation:
         self.frame_nb = data["length"]
         self.frame_duration = override_frame_duration or data["duration"]
         self.flip_x = flip_x
-
-        print(data)
 
     def __len__(self):
         """Number of frames for one full loop."""

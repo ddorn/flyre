@@ -81,6 +81,10 @@ class Object:
             new (pygame.Vector2): actual size of the window
         """
 
+    def create_inputs(self):
+        """Return an Input object that handles events for the object."""
+        return {}
+
 
 class SpriteObject(Object):
     SCALE = 1

@@ -3,6 +3,7 @@ from random import choice, randint, uniform
 
 import pygame
 from pygame import Vector2
+from pygame.locals import *
 
 from constants import ANIMATIONS, DEBUG, WORLD, YELLOW
 from engine import (
@@ -10,7 +11,8 @@ from engine import (
     GFX,
     Object,
 )
-from engine.assets import font
+from engine.assets import font, text
+from engine.pygame_input import Button
 from engine.utils import chrange, random_in_rect
 
 __all__ = ["Planet", "Debug", "Title"]
@@ -212,3 +214,47 @@ class Title(Object):
         gfx.box(self.bg_rect, (0, 0, 0, 80))
         gfx.rect(*self.bg_rect, self.color, 1)
         gfx.blit(self.shown_image, center=self.center)
+
+
+class Menu(Object):
+    def __init__(self, midtop, actions: dict):
+        super().__init__((0, 0))
+
+        self.draw_midtop = midtop
+        self.actions = actions
+        self.selected = 0
+
+    def create_inputs(self):
+        up = Button(K_UP, K_w)
+        up.on_press(lambda _: self.change_selection(-1))
+
+        down = Button(K_DOWN, K_s)
+        down.on_press(lambda _: self.change_selection(+1))
+
+        select = Button(K_SPACE, K_RETURN, K_RIGHT, K_d)
+        select.on_press(self.select)
+
+        return {up: up, down: down, select: select}
+
+    def change_selection(self, amount):
+        self.selected += amount
+        self.selected %= len(self.actions)
+
+    def select(self, *args):
+        key = list(self.actions)[self.selected]
+        self.actions[key]()
+
+    def draw(self, gfx: GFX):
+        super().draw(gfx)
+
+        midtop = self.draw_midtop
+        for i, action in enumerate(self.actions):
+            if i == self.selected:
+                color = YELLOW
+            else:
+                color = "white"
+
+            s = text(action, 32, color)
+            r = s.get_rect(midtop=midtop)
+            gfx.surf.blit(s, r)
+            midtop = r.midbottom
