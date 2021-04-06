@@ -10,6 +10,7 @@ from engine import (
     Animation,
     GFX,
     Object,
+    SpriteObject,
 )
 from engine.assets import font, text
 from engine.pygame_input import Button
@@ -22,25 +23,36 @@ class Planet(Object):
     Z = -1
     TOTAL_PLANETS = len(glob(str(ANIMATIONS) + "/planet*.json"))
 
-    def __init__(self, number, pos, speed=2):
+    def __init__(self, number, pos, speed, wrap_rect):
         self.number = number
         self.animation = Animation(f"planet{number}", speed)
+        self.wrap_rect = wrap_rect
 
         super().__init__(
             pos, (self.animation.tile_size, self.animation.tile_size), vel=(0, 0.5)
         )
 
     @classmethod
-    def random_planet(cls, number, avoid_positions, y=None, max_trials=1000):
+    def random_planet(cls, number, avoid_positions, wrap_rect, y=None, max_trials=1000):
         done = False
         trials = 0
         pos = (0, 0)
         while not done:
             trials += 1
             if y is not None:
-                pos = uniform(WORLD.left, WORLD.right), y
+                pos = uniform(wrap_rect.left, wrap_rect.right), y
             else:
-                pos = random_in_rect(WORLD, (0, 1), (-1 / 2, 1))
+                pos = random_in_rect(wrap_rect, (0, 1), (-1 / 2, 1))
+
+            # Any position is too close
+            for p in avoid_positions:
+                if p.distance_to(pos) < 200:
+                    break
+            else:
+                done = True
+
+            if trials > max_trials:
+                return None
 
             # Any position is too close
             for p in avoid_positions:
@@ -53,13 +65,13 @@ class Planet(Object):
                 return None
 
         speed = randint(2, 5)
-        return Planet(number, pos, speed)
+        return Planet(number, pos, speed, wrap_rect)
 
     def logic(self, state):
         super().logic(state)
         self.animation.logic()
 
-        if self.pos.y > WORLD.bottom + self.size.y:
+        if self.pos.y > self.wrap_rect.bottom + self.size.y:
 
             numbers_taken = [planet.number for planet in state.get_all(Planet)]
             number = choice(
@@ -67,7 +79,9 @@ class Planet(Object):
             )
             positions = [planet.pos for planet in state.get_all(Planet)]
             # planet can be none if it can't place it, so I keep the old planet alive until I can place it.
-            planet = Planet.random_planet(number, positions, WORLD.top - 200)
+            planet = Planet.random_planet(
+                number, positions, self.wrap_rect, self.wrap_rect.top - 200
+            )
 
             if planet is not None:
                 self.alive = False
@@ -258,3 +272,12 @@ class Menu(Object):
             r = s.get_rect(midtop=midtop)
             gfx.surf.blit(s, r)
             midtop = r.midbottom
+
+
+class Text(SpriteObject):
+    def __init__(self, txt, color, size, font_name=None, **anchor):
+
+        img = text(txt, size, color, font_name)
+        pos = img.get_rect(**anchor).topleft
+
+        super().__init__(pos, img, size=img.get_size())

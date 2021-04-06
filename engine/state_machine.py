@@ -6,6 +6,7 @@ from pygame.locals import *
 
 from engine.particles import ParticleSystem
 from engine.pygame_input import Button, Inputs, QuitEvent
+from engine.utils import mix
 
 T = TypeVar("T")
 
@@ -15,6 +16,8 @@ __all__ = ["State", "StateMachine"]
 class State:
     BG_COLOR = "black"
     BG_MUSIC = None
+    BG_COLORS = []
+    BG_TRANSITION_TIME = 20 * 60
 
     def __init__(self):
         self.timer = 0
@@ -66,6 +69,8 @@ class State:
 
         To change to an other state, you need to set self.next_state"""
         self.timer += 1
+
+        self.update_bg()
 
         # Add all object that have been queued
         self.add_object_lock = False
@@ -140,6 +145,15 @@ class State:
     def do_shake(self, frames):
         assert frames >= 0
         self.shake += frames
+
+    def update_bg(self):
+        if self.BG_COLORS:
+            first = self.timer // self.BG_TRANSITION_TIME % len(self.BG_COLORS)
+            second = (first + 1) % len(self.BG_COLORS)
+            t = (self.timer % self.BG_TRANSITION_TIME) / self.BG_TRANSITION_TIME
+            bg = mix(self.BG_COLORS[first], self.BG_COLORS[second], t)
+
+            self.BG_COLOR = bg
 
 
 class StateMachine:

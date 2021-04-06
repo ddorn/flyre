@@ -21,7 +21,7 @@ __all__ = [
     "ShardParticle",
 ]
 
-from engine.utils import bounce, exp_impulse
+from engine.utils import bounce, exp_impulse, random_in_rect
 
 pygame.init()
 
@@ -120,6 +120,21 @@ class ParticleFountain:
     def logic(self, system):
         for _ in rrange(self.frequency):
             system.add(self.generator())
+
+    @classmethod
+    def stars(cls, rect):
+        """Spawn stars particles in the rectangle."""
+        return cls(
+            lambda: SquareParticle("white")
+            .builder()
+            .at(random_in_rect(rect), 90)
+            .velocity(0.2)
+            .living(6 * 60)
+            .sized(uniform(1, 3))
+            .anim_blink()
+            .build(),
+            0.2,
+        )
 
 
 class Particle:

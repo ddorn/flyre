@@ -1,6 +1,6 @@
 from constants import SIZE
 from engine import App, IntegerScaleScreen
-from states.game import GameState
+from states.menu import MenuState
 
 if __name__ == "__main__":
-    App(GameState, IntegerScaleScreen(SIZE)).run()
+    App(MenuState, IntegerScaleScreen(SIZE)).run()

@@ -21,13 +21,14 @@ def rotate(image, degrees):
 
 
 @lru_cache()
-def font(size: int, name: str = "Wellbutrin"):
+def font(size: int, name: str = None):
+    name = name or "Wellbutrin"
     file = FONTS / (name + ".ttf")
     return pygame.font.Font(file, size)
 
 
 @lru_cache(10000)
-def text(txt, size, color, name="Wellbutrin"):
+def text(txt, size, color, name=None):
     return font(size, name).render(txt, False, color)
 
 

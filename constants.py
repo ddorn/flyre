@@ -12,6 +12,7 @@ assert INFO_RECT.width == 208
 
 YELLOW = (255, 224, 145)
 RED = (221, 55, 69)
+ORANGE = (254, 174, 52)
 GREEN = (99, 199, 77)
 
 ASSETS_DIR = Path(__file__).parent / "assets"
