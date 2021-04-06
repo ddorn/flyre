@@ -39,7 +39,7 @@ SNOW = pygame.image.fromstring(
 )
 
 
-def clamp(x, mini, maxi):
+def clamp(x, mini=0.0, maxi=1.0):
     if x < mini:
         return mini
     if x > maxi:
@@ -222,6 +222,8 @@ class Particle:
 
         def anim_fade(self, fade_start=0):
             def fade(particle):
+                if particle.life_prop < fade_start:
+                    return
                 t = (particle.life_prop - fade_start) / (1 - fade_start)
                 alpha = int(255 * (1 - t))
                 particle.alpha = alpha
@@ -344,6 +346,30 @@ class DrawnParticle(Particle):
             value = clamp(0, 100, round(100 * value))
             self._p.color.hsva = (hue, saturation, value, 100)
             return self
+
+        def anim_gradient_to(self, h0, s0, v0, h1, v1, s1):
+            """Animate the color of the particle in hsv space.
+
+            Animations of the transparency should come after this one
+            """
+
+            # h0, s0, v0, a = self._p.color.hsva
+            # h1 = h if h is not None else h0
+            # s1 = clamp(s) * 100 if s is not None else s0
+            # v1 = clamp(v) * 100 if v is not None else v0
+
+            def gradient_to(particle):
+                p = 1 - particle.life_prop
+                t = particle.life_prop
+
+                h = int(p * h0 + t * h1) % 360
+                s = int(100 * (p * s0 + t * s1))
+                v = int(100 * (p * v0 + t * v1))
+                r = h, s, v, 100
+                print(r)
+                particle.color.hsva = r
+
+            return self.anim(gradient_to)
 
     def builder(self):
         # the method is here only for type hinting

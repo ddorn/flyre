@@ -1,12 +1,18 @@
-from random import gauss, random
+from random import gauss, random, uniform
 
 import pygame
 
 from constants import WORLD, YELLOW
-from engine import App, LineParticle
+from engine import App, LineParticle, SquareParticle
 from engine.object import Entity
-from engine.utils import chrange, clamp_length, from_polar, part_perp_to, random_in_rect
-
+from engine.utils import (
+    chrange,
+    clamp_length,
+    from_polar,
+    part_perp_to,
+    random_in_rect,
+    random_in_surface,
+)
 
 __all__ = ["SpaceShip"]
 
@@ -28,6 +34,7 @@ class Cooldown:
 class SpaceShip(Entity):
     GUN = (16, 18)
     MAX_THRUST = 0.2
+    KNOCK_BACK = 2
 
     def __init__(
         self,
@@ -49,7 +56,7 @@ class SpaceShip(Entity):
         self.fire_chance = 0.1
         self.fire_dmg = 0.1
         self.fire_duration = 2 * 60
-        self.nb_bullets = 1
+        self.nb_bullets = 5
 
         # TODO: Not implemented !
         self.shield = False
@@ -228,6 +235,27 @@ class SpaceShip(Entity):
             if debuff.done:
                 to_remove.add(debuff)
         self.debuffs.difference_update(to_remove)
+
+    def on_death(self, state):
+        for _ in range(200):
+            state.particles.add(
+                SquareParticle()
+                .builder()
+                .at(self.center, uniform(0, 360))
+                .velocity(v := gauss(6, 1), 0)
+                # .hsv(h := gauss(20, 8), 0)
+                .living(int(v / 0.4))
+                .acceleration(-0.4)
+                .sized(gauss(3, 1))
+                .anim_gradient_to(h := gauss(10, 8), 1, 1, h, 1, 0.8)
+                .anim_fade(0.5)
+                .build()
+            )
+
+    def hit(self, bullet):
+        if not self.invincible:
+            self.damage(bullet.damage)
+            self.vel += from_polar(self.KNOCK_BACK, bullet.angle)
 
 
 class HorizontalBehavior(SpaceShip):

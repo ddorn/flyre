@@ -8,7 +8,7 @@ from constants import WORLD, YELLOW
 from engine import App, Entity, ImageParticle, SquareParticle
 from engine.assets import font, tilemap
 from engine.pygame_input import Axis
-from engine.utils import clamp
+from engine.utils import clamp, clamp_length, from_polar
 from objects import Bullet, SpaceShip
 from objects.bullets import DebuffBullet
 from objects.skilltree import build_skill_tree, FireDebuff, RegenDebuff
@@ -16,6 +16,7 @@ from objects.skilltree import build_skill_tree, FireDebuff, RegenDebuff
 
 class Player(SpaceShip):
     SCALE = 2
+    MAX_THRUST = 0.5
 
     SIZE = pygame.Vector2(17, 13) * SCALE
     OFFSET = pygame.Vector2(-7, -11)
@@ -39,11 +40,11 @@ class Player(SpaceShip):
         self.max_speed = 5
         self.debuffs.add(RegenDebuff(100000000, 0.01))
 
-    def move_horizontally(self, value: Axis):
-        self.vel.x = value.value * self.max_speed
+    def move_horizontally(self, axis: Axis):
+        self.vel.x += axis.value * self.MAX_THRUST * 2
 
-    def move_vertically(self, value: Axis):
-        self.vel.y = value.value * self.max_speed
+    def move_vertically(self, axis: Axis):
+        self.vel.y += axis.value * self.MAX_THRUST * 2
 
     def fire(self, state):
 
@@ -77,13 +78,17 @@ class Player(SpaceShip):
             )
 
     def hit(self, bullet):
+        super().hit(bullet)
         if not self.invincible:
             App.current_state().do_shake(3)
-            self.damage(bullet.damage)
 
     def logic(self, state):
-        if self.vel.length() > self.max_speed:
-            self.vel.scale_to_length(self.max_speed)
+
+        l = self.vel.length()
+        if l > 0:
+            self.vel *= 1 - min(1, self.MAX_THRUST / l)
+
+        clamp_length(self.vel, self.max_speed)
 
         for jet in (self.JET1, self.JET2):
             state.particles.add(

@@ -46,7 +46,7 @@ class Enemy(SpaceShip):
         return state.add(Bullet(self.sprite_to_screen(self.GUN), direction, self))
 
     def hit(self, bullet):
-        self.damage(bullet.damage)
+        super().hit(bullet)
 
         player = App.current_state().player
         if self.life <= 0 and bullet.owner is player:

@@ -13,11 +13,12 @@ from objects.skilltree import Debuff
 
 
 class BaseBullet:
-    def __init__(self, owner, damage=100, speed=5, crit=False):
+    def __init__(self, owner, damage=100, speed=5, angle=0.0, crit=False):
         self.owner = owner
         self.damage = damage
         self.speed = speed
         self.crit = crit
+        self.angle = angle
 
     def logic(self, state):
         if self.owner is state.player:
@@ -37,19 +38,20 @@ class Bullet(SpriteObject, BaseBullet):
     Z = 1
     SPEED = 5
     SIZE = (1, 1)
+    INITIAL_ROTATION = 90
 
     def __init__(self, pos, direction, owner, damage=100, speed=5, crit=False):
-        BaseBullet.__init__(self, owner, damage, speed, crit)
-
         img = auto_crop(tilemap("sprites", 0, 0, 16))
 
         vel = pygame.Vector2(direction)
-        vel.scale_to_length(self.speed)
+        vel.scale_to_length(speed)
         w, h = img.get_size()
 
         # noinspection PyTypeChecker
         angle = -vel.angle_to((1, 0))
         pos += from_polar(h, angle) + from_polar(w / 2, angle - 90) - vel
+
+        BaseBullet.__init__(self, owner, damage, speed, angle, crit)
         SpriteObject.__init__(self, pos, img, (0, 0), img.get_size(), vel, 90 - angle)
 
     def logic(self, state):
@@ -69,7 +71,7 @@ class Bullet(SpriteObject, BaseBullet):
                     LineParticle(gauss(8, 2), YELLOW)
                     .builder()
                     .at(
-                        self.pos, gauss(270 - self.rotation, 20)
+                        self.pos, gauss(self.angle, 20)
                     )  # the angle is 90-self.rotation
                     .velocity(gauss(5, 1))
                     .sized(uniform(1, 3))
@@ -127,9 +129,8 @@ class Laser(Object, BaseBullet):
         damage=100,
     ):
         Object.__init__(self, owner.sprite_to_screen(owner.GUN))
-        BaseBullet.__init__(self, owner, damage)
+        BaseBullet.__init__(self, owner, damage, angle=owner.angle)
         self.target = target
-        self.angle = owner.angle
 
         self.timer = 0
         self.follow_player_end = follow_player_duration
