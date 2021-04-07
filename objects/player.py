@@ -9,7 +9,7 @@ from engine import App, Entity, ImageParticle, SquareParticle
 from engine.assets import font, tilemap
 from engine.pygame_input import Axis
 from engine.utils import clamp, clamp_length, from_polar
-from objects import Bullet, SpaceShip
+from objects import Bullet, CopyEnemy, SpaceShip
 from objects.bullets import DebuffBullet
 from objects.other import HealthBar
 from objects.skilltree import build_skill_tree, FireDebuff, RegenDebuff
@@ -41,6 +41,7 @@ class Player(SpaceShip):
         self.max_speed = 5
 
         self.health_bar = HealthBar((0, 0, 30, 1), (255, 0, 0, 200), self)
+
         # self.debuffs.add(RegenDebuff(100000000, 0.01))
 
     def move_horizontally(self, axis: Axis):
@@ -80,13 +81,15 @@ class Player(SpaceShip):
                 )
             )
 
+        for en in state.get_all(CopyEnemy):
+            en.fire(state, from_polar(1, en.angle))
+
     def hit(self, bullet):
         super().hit(bullet)
         if not self.invincible:
             App.current_state().do_shake(3)
 
     def logic(self, state):
-
         l = self.vel.length()
         if l > 0:
             self.vel *= 1 - min(1, self.MAX_THRUST / l)

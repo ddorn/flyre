@@ -6,11 +6,16 @@ from .spaceship import SpaceShip
 from constants import WORLD
 from engine import App
 from engine.assets import tilemap
-from engine.utils import angle_towards, clamp_length
-from .bullets import Bullet, Laser
+from engine.utils import (
+    angle_towards,
+    clamp_length,
+    random_in_rect,
+    random_in_rect_and_avoid,
+)
+from .bullets import Bomb, Bullet, Laser
 
 
-__all__ = ["Enemy", "LaserEnemy", "ChargeEnemy"]
+__all__ = ["Enemy", "LaserEnemy", "ChargeEnemy", "CopyEnemy", "BomberEnemy"]
 
 
 class Enemy(SpaceShip):
@@ -102,3 +107,53 @@ class ChargeEnemy(Enemy):
         yield from self.charge_to_player()
 
         self.alive = False
+
+
+class CopyEnemy(Enemy):
+    SCALE = 2
+    MAX_THRUST = 0.5
+
+    SIZE = Vector2(17, 13) * SCALE
+    OFFSET = Vector2(-7, -11)
+    JET1 = Vector2(14, 22)
+    JET2 = Vector2(15, 22)
+    GUN = Vector2(15, 5)
+    GUN_LEFT = Vector2(11, 11)
+    GUN_RIGHT = Vector2(19, 11)
+    GUN_FAR_LEFT = Vector2(8, 14)
+    GUN_FAR_RIGHT = Vector2(22, 14)
+
+    def __init__(self, pos, player):
+        super().__init__(pos, 3)
+
+        self.player = player
+
+    # TODO: particle + same bullets as the player
+
+    def script(self):
+        yield from self.go_straight_to()
+        while True:
+            yield from self.hover_around(1000)
+
+
+class BomberEnemy(Enemy):
+    SIZE = Vector2(22, 22) * Enemy.SCALE
+    OFFSET = (-5, -5)
+
+    def __init__(self, pos):
+        super().__init__(pos, 4)
+
+    def fire(self, state, direction=None):
+        state.add(Bomb(self.center, self, self.bullet_damage))
+
+    def script(self):
+        while True:
+
+            pos = random_in_rect_and_avoid(
+                WORLD.inflate(-60, -60),
+                [o.center for o in self.state.get_all(SpaceShip, Bomb)],
+                80,
+            )
+            yield from self.go_straight_to(pos)
+            yield from self.slow_down_and_stop()
+            self.fire(self.state)

@@ -3,16 +3,20 @@ from random import gauss, random, uniform
 
 from constants import *
 from engine import ImageParticle, LineParticle, SquareParticle
-from engine.assets import font, play, tilemap
+from engine.assets import Animation, font, play, tilemap
 from engine.object import Object, SpriteObject
 from engine.utils import auto_crop, bounce, from_polar, vec2int
 
 __all__ = ["Bullet", "Laser", "DebuffBullet"]
 
+from .spaceship import SpaceShip
+
 from objects.skilltree import Debuff
 
 
 class BaseBullet:
+    Z = 1
+
     def __init__(self, owner, damage=100, speed=5, angle=0.0, crit=False):
         self.owner = owner
         self.damage = damage
@@ -35,7 +39,6 @@ class BaseBullet:
 
 
 class Bullet(SpriteObject, BaseBullet):
-    Z = 1
     SPEED = 5
     SIZE = (1, 1)
     INITIAL_ROTATION = 90
@@ -119,8 +122,6 @@ class DebuffBullet(Bullet):
 
 
 class Laser(Object, BaseBullet):
-    Z = 1
-
     def __init__(
         self,
         owner,
@@ -192,3 +193,35 @@ class Laser(Object, BaseBullet):
             for i in range(200):
                 p = vec2int(self.pos + d * i)
                 gfx.surf.set_at(p, RED)
+
+
+class Bomb(Object, BaseBullet):
+    SIZE = (9, 9)
+
+    def __init__(self, center, owner, damage=200, timer=3 * 60):
+
+        Object.__init__(self, center, self.SIZE)
+        self.center = center
+
+        BaseBullet.__init__(self, owner, damage, 0)
+        self.animation = Animation(f"bomb")
+        self.timer = timer
+
+    def logic(self, state):
+        super().logic(state)
+        self.animation.logic()
+
+        self.timer -= 1
+
+        if self.timer == 0:
+            self.animation = Animation("explosion")
+            for ship in state.get_all(SpaceShip):
+                if ship.center.distance_to(self.center) < 20 + ship.size.length() / 2:
+                    ship.hit(self)
+
+        if self.timer == -len(self.animation):
+            self.alive = False
+
+    def draw(self, gfx):
+        frame = self.animation.image()
+        gfx.blit(frame, center=self.center)

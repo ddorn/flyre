@@ -230,3 +230,28 @@ def overlay(image: pygame.Surface, color, alpha=255):
     img.blit(overlay, (0, 0))
 
     return img
+
+
+def random_in_rect_and_avoid(
+    rect: pygame.Rect,
+    avoid_positions,
+    avoid_radius,
+    max_trials=1000,
+    force_y=None,
+    default=None,
+):
+    for trial in range(max_trials):
+        if force_y is not None:
+            pos = uniform(rect.left, rect.right), force_y
+        else:
+            pos = random_in_rect(rect)
+
+        # Any position is too close
+        for p in avoid_positions:
+            if p.distance_to(pos) < avoid_radius:
+                break
+        else:
+            return pos
+
+    print("DEFAULT")
+    return default

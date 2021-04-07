@@ -144,7 +144,7 @@ class State:
 
         return object
 
-    def get_all(self, type_: Type[T]) -> Iterator[T]:
+    def get_all(self, *type_):
         for object in self.objects:
             if isinstance(object, type_):
                 yield object

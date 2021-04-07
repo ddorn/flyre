@@ -12,6 +12,7 @@ from engine.utils import (
     from_polar,
     part_perp_to,
     random_in_rect,
+    random_in_rect_and_avoid,
     random_in_surface,
 )
 
@@ -164,16 +165,20 @@ class SpaceShip(Entity):
             * chrange(dist, (0, WORLD.height - up), (0, 1))
         )
 
-    def random_but_high(self) -> pygame.Vector2:
+    def random_but_high(self, avoid=(), radius=50) -> pygame.Vector2:
         margin = 15
         rect = WORLD.inflate(-2 * margin, -2 * margin)
         rect.height = WORLD.height / 2 - 2 * margin
-        return random_in_rect(rect)
+        return random_in_rect_and_avoid(
+            rect, avoid, radius, default=random_in_rect(rect)
+        )
 
     def go_to(self, goal=None, precision=30):
 
         if goal is None:
-            goal = self.random_but_high()
+            goal = self.random_but_high(
+                [e.center for e in self.state.get_all(SpaceShip)], 100
+            )
 
         while self.center.distance_to(goal) > precision:
 
@@ -195,7 +200,9 @@ class SpaceShip(Entity):
 
     def go_straight_to(self, goal=None, precision=30):
         if goal is None:
-            goal = self.random_but_high()
+            goal = self.random_but_high(
+                [e.center for e in self.state.get_all(SpaceShip)], 100
+            )
 
         while self.center.distance_to(goal) > precision:
 
@@ -219,7 +226,6 @@ class SpaceShip(Entity):
         player = state.player
 
         for _ in range(int(duration)):
-            thrust = pygame.Vector2()
 
             thrust = self.force_to_avoid_all_ships()
             if thrust.length() == 0:

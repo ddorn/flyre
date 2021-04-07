@@ -56,6 +56,8 @@ class Level:
 
 class Level1(Level):
     def script(self):
+        self.spawn(BomberEnemy)
+        yield from self.wait_until_dead()
         self.spawn(Enemy, -1)
         self.spawn(Enemy, 1)
         yield from self.wait_until_dead()

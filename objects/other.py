@@ -15,7 +15,7 @@ from engine import (
 )
 from engine.assets import font, play, text
 from engine.pygame_input import Button
-from engine.utils import chrange, random_in_rect
+from engine.utils import chrange, random_in_rect, random_in_rect_and_avoid
 
 __all__ = ["Planet", "Debug", "Title"]
 
@@ -35,35 +35,16 @@ class Planet(Object):
 
     @classmethod
     def random_planet(cls, number, avoid_positions, wrap_rect, y=None, max_trials=1000):
-        done = False
-        trials = 0
-        pos = (0, 0)
-        while not done:
-            trials += 1
-            if y is not None:
-                pos = uniform(wrap_rect.left, wrap_rect.right), y
-            else:
-                pos = random_in_rect(wrap_rect, (0, 1), (-1 / 2, 1))
+        rect = pygame.Rect(wrap_rect)
+        rect.top -= rect.height / 2
+        rect.height *= 1.5
 
-            # Any position is too close
-            for p in avoid_positions:
-                if p.distance_to(pos) < 200:
-                    break
-            else:
-                done = True
+        pos = random_in_rect_and_avoid(
+            rect, avoid_positions, 200, max_trials=max_trials, force_y=y
+        )
 
-            if trials > max_trials:
-                return None
-
-            # Any position is too close
-            for p in avoid_positions:
-                if p.distance_to(pos) < 200:
-                    break
-            else:
-                done = True
-
-            if trials > max_trials:
-                return None
+        if pos is None:
+            return
 
         speed = randint(2, 5)
         return Planet(number, pos, speed, wrap_rect)
