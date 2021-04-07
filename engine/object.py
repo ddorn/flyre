@@ -192,12 +192,12 @@ class Entity(SpriteObject):
             .build()
         )
 
-    def damage(self, amount):
+    def damage(self, amount, ignore_invincibility=False):
         if amount < 0:
             self.heal(amount)
             return
 
-        if self.invincible:
+        if self.invincible and not ignore_invincibility:
             return
 
         self.last_hit = 0

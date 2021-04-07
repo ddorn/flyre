@@ -1,5 +1,5 @@
 from random import randint
-from typing import Optional, Type, TypeVar, Union
+from typing import Iterator, Optional, Type, TypeVar, Union
 
 import pygame
 from pygame.locals import *
@@ -139,7 +139,7 @@ class State:
 
         return object
 
-    def get_all(self, type_):
+    def get_all(self, type_: Type[T]) -> Iterator[T]:
         for object in self.objects:
             if isinstance(object, type_):
                 yield object

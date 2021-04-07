@@ -3,7 +3,7 @@ from random import gauss, random, uniform
 import pygame
 
 from constants import WORLD, YELLOW
-from engine import App, LineParticle, SquareParticle
+from engine import App, LineParticle, SquareParticle, State
 from engine.assets import play
 from engine.object import Entity
 from engine.utils import (
@@ -36,6 +36,7 @@ class SpaceShip(Entity):
     GUN = (16, 18)
     MAX_THRUST = 0.2
     KNOCK_BACK = 2
+    CONTACT_DAMAGE = 100
 
     def __init__(
         self,
@@ -63,6 +64,8 @@ class SpaceShip(Entity):
         self.shield = False
 
         self.debuffs = set()
+
+        self.overlapping_ships = {}
 
     def force_to_move_towards(self, goal):
         direction = goal - self.pos
@@ -112,16 +115,30 @@ class SpaceShip(Entity):
         return force
 
     def force_to_avoid(self, pos, radius):
-        p = self.pos
+        p = self.center
         distance = pos - p
         dist = distance.length()
 
         if dist > radius:
             return pygame.Vector2()
 
-        norm = chrange(dist, (0, radius), (0, self.MAX_THRUST * 2), flipped=True)
+        norm = chrange(
+            max(0, dist - radius / 2),
+            (0, radius / 2),
+            (0, self.MAX_THRUST * 2),
+            flipped=True,
+        )
         distance.scale_to_length(norm)
         return -distance
+
+    def force_to_avoid_all_ships(self):
+        thrust = pygame.Vector2()
+        for ship in self.state.get_all(SpaceShip):
+            if ship is self:
+                continue
+            r = ship.size.length() + self.size.length()
+            thrust += self.force_to_avoid(ship.center, r)
+        return thrust
 
     def force_to_stay_close(self, pos, radius):
         p = self.pos
@@ -157,12 +174,16 @@ class SpaceShip(Entity):
             goal = random_in_rect(rect)
 
         while self.pos.distance_to(goal) > precision:
-            p = self.pos
 
-            thrust = self.force_to_move_towards(goal)
-            thrust += self.force_to_accelerate() * 0.1
-            thrust += self.force_slow_down_around(goal, 60)
-            thrust += self.force_to_avoid_walls(30)
+            thrust = self.force_to_avoid_all_ships()
+            if thrust.length() == 0:
+                self.state.debug.point(*self.center, "red")
+                thrust += self.force_to_move_towards(goal)
+                thrust += self.force_to_accelerate() * 0.1
+                thrust += self.force_slow_down_around(goal, 60)
+                thrust += self.force_to_avoid_walls(30)
+            else:
+                self.state.debug.point(*self.center, "green")
 
             clamp_length(thrust, self.MAX_THRUST)
 
@@ -178,19 +199,22 @@ class SpaceShip(Entity):
 
         for _ in range(int(duration)):
             thrust = pygame.Vector2()
-            # dont go too close to the player
-            thrust += self.force_to_avoid(player.pos, 100) * 0.3
-            # don't go too far either
-            thrust += self.force_to_stay_close(player.pos, 300)
-            thrust += self.force_to_slow_down(self.max_speed / 5) * 0.1
-            thrust += self.force_to_stay_up(WORLD.height / 4)
 
-            thrust += self.force_to_avoid_walls(30)
+            thrust = self.force_to_avoid_all_ships()
+            if thrust.length() == 0:
+                # dont go too close to the player
+                thrust += self.force_to_avoid(player.pos, 100) * 0.3
+                # don't go too far either
+                thrust += self.force_to_stay_close(player.pos, 300)
+                thrust += self.force_to_slow_down(self.max_speed / 5) * 0.1
+                thrust += self.force_to_stay_up(WORLD.height / 4)
 
-            # Avoid other enemies
-            for enemy in state.get_all(Enemy):
-                if enemy is not self:
-                    thrust += self.force_to_avoid(enemy.pos, 50)
+                thrust += self.force_to_avoid_walls(30)
+
+                # Avoid other enemies
+                for enemy in state.get_all(Enemy):
+                    if enemy is not self:
+                        thrust += self.force_to_avoid(enemy.pos, 50)
 
             self.vel += clamp_length(thrust, self.MAX_THRUST)
             yield
@@ -227,8 +251,25 @@ class SpaceShip(Entity):
             .build()
         )
 
-    def logic(self, state):
+    def logic(self, state: State):
         super().logic(state)
+
+        new_overlapping = {}
+        for ship in state.get_all(SpaceShip):
+            if ship is self:
+                continue
+
+            print(ship, self)
+
+            radius_sum = self.size.length() / 2 + ship.size.length() / 2
+            if self.center.distance_to(ship.center) < radius_sum:
+                new_overlapping[ship] = self.overlapping_ships.get(ship, -1) + 1
+
+        self.overlapping_ships = new_overlapping
+        for ship, duration in self.overlapping_ships.items():
+            if duration % 20 == 0:
+                play("hit")
+                self.damage(ship.CONTACT_DAMAGE, ignore_invincibility=True)
 
         to_remove = set()
         for debuff in self.debuffs:

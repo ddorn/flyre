@@ -82,6 +82,7 @@ class ChargeEnemy(Enemy):
     SIZE = Vector2(22, 18) * Enemy.SCALE
     OFFSET = (-6, -8)
     GUN = (16.5, 13)
+    CONTACT_DAMAGE = 400
 
     def __init__(self, pos):
         super().__init__(pos, 1)
