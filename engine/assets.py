@@ -45,6 +45,7 @@ def colored_text(size, *parts, name=None):
     w = sum(s.get_width() for s in surfaces)
     h = max(s.get_height() for s in surfaces)
     output = pygame.Surface((w, h))
+    output.set_colorkey((0, 0, 0))
 
     x = 0
     for surf in surfaces:

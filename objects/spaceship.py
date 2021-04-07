@@ -53,7 +53,7 @@ class SpaceShip(Entity):
         self.bullet_damage = 100
         self.crit_chance = 0.01
         self.crit_mult = 3
-        self.fire_chance = 0.1
+        self.fire_chance = 0.02
         self.fire_dmg = 0.1
         self.fire_duration = 2 * 60
         self.nb_bullets = 5

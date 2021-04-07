@@ -4,6 +4,7 @@ from typing import Optional, Type, TypeVar, Union
 import pygame
 from pygame.locals import *
 
+from constants import MUSIC
 from engine.particles import ParticleSystem
 from engine.pygame_input import Button, Inputs, QuitEvent
 from engine.utils import mix
@@ -57,7 +58,7 @@ class State:
         self.inputs = self.create_inputs()
         self.next_state = self
         if self.BG_MUSIC:
-            pygame.mixer.music.load(self.BG_MUSIC)
+            pygame.mixer.music.load(MUSIC / self.BG_MUSIC)
             # pygame.mixer.music.set_volume(VOLUME['BG_MUSIC'] * Settings().music)
             pygame.mixer.music.play(-1)
 

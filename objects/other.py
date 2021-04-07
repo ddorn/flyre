@@ -5,7 +5,7 @@ import pygame
 from pygame import Vector2
 from pygame.locals import *
 
-from constants import ANIMATIONS, DEBUG, WORLD, YELLOW
+from constants import ANIMATIONS, DEBUG, WHITE, WORLD, YELLOW
 from engine import (
     Animation,
     GFX,

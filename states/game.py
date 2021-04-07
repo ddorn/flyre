@@ -1,16 +1,18 @@
+from functools import partial
+
 from pygame import Vector2
 from random import shuffle, uniform
 
 from constants import *
 from engine import GFX, ParticleFountain, SquareParticle
-from engine.assets import font, image
+from engine.assets import font, image, text
 from engine.pygame_input import Axis, Button
 from engine.state_machine import State
 from engine.utils import auto_crop, mix, random_in_rect
 from level import LEVELS
 from objects import Planet, Title
 from objects.player import Player
-from objects.skilltree import build_skill_tree
+from objects.skilltree import build_skill_tree, RegenDebuff
 from states.my_state import MyState
 from states.skillpickup import SkillPickUp
 
@@ -87,5 +89,40 @@ class GameState(MyState):
         score = auto_crop(font(20).render(str(self.player.score), False, YELLOW))
         gfx.blit(score, bottomright=INFO_RECT.topleft + Vector2(197, 34))
 
-        self.player.skill_tree.layout((INFO_RECT.centerx, 209))
+        self.player.skill_tree.layout((INFO_RECT.centerx + 1, 209))
         self.player.skill_tree.draw(gfx)
+
+        HP = (24 + INFO_RECT.x, 81 + INFO_RECT.y)
+        CRIT = HP[0], HP[1] + 26
+        REGEN = HP[0], CRIT[1] + 48
+        ATK = HP[0] + 161, HP[1] + 5
+        BURN = ATK[0], ATK[1] + 69
+
+        def get(txt, color):
+            if isinstance(txt, (float)):
+                txt = int(txt)
+            return text(str(txt), 7, WHITE, name="pixelmillennium")
+
+        # HP
+        s = get(self.player.life, GREEN)
+        gfx.blit(s, topleft=HP)
+
+        # CRIT
+        s = get(f"{int(self.player.crit_chance * 100)}%", RED)
+        gfx.blit(s, topleft=CRIT)
+
+        # REGEN
+        regen = 0
+        for debuff in self.player.debuffs:
+            if isinstance(debuff, RegenDebuff):
+                regen = debuff.strength * self.player.max_life
+        s = get(regen, GREEN)
+        gfx.blit(s, topleft=REGEN)
+
+        # ATK
+        s = get(self.player.bullet_damage, RED)
+        gfx.blit(s, topright=ATK)
+
+        # BURN
+        s = get(f"{int(100 * self.player.fire_chance)}%", ORANGE)
+        gfx.blit(s, topright=BURN)

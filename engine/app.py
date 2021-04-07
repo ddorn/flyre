@@ -23,7 +23,7 @@ class App(StateMachine):
     All the game logic and randering is done by the states themselves.
     """
 
-    FPS = 60
+    FPS = 600
     NAME = "Pygame window"
     MAIN_APP: "App" = None
 

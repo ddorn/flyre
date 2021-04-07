@@ -366,7 +366,6 @@ class DrawnParticle(Particle):
                 s = int(100 * (p * s0 + t * s1))
                 v = int(100 * (p * v0 + t * v1))
                 r = h, s, v, 100
-                print(r)
                 particle.color.hsva = r
 
             return self.anim(gradient_to)

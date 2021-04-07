@@ -15,6 +15,7 @@ __all__ = ["Enemy", "LaserEnemy", "ChargeEnemy"]
 
 class Enemy(SpaceShip):
     SCALE = 2
+    INVICIBILITY_DURATION = 5
 
     OFFSET = (-8, -9)
     SIZE = Vector2(17, 17) * SCALE

@@ -13,13 +13,14 @@ assert INFO_RECT.width == 208
 YELLOW = (255, 224, 145)
 RED = (221, 55, 69)
 ORANGE = (254, 174, 52)
-WHITE = (255, 255, 255)
+WHITE = (192, 203, 220)
 GREEN = (99, 199, 77)
 
 ASSETS_DIR = Path(__file__).parent / "assets"
 IMAGES = ASSETS_DIR / "images"
 ANIMATIONS = ASSETS_DIR / "animations"
 FONTS = ASSETS_DIR / "fonts"
+MUSIC = ASSETS_DIR / "music"
 
 UPWARDS = -90  # degrees
 DOWNWARDS = 90  # degrees

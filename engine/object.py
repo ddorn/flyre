@@ -171,6 +171,12 @@ class Entity(SpriteObject):
         self.last_hit = 100000000
 
     def heal(self, amount):
+        if self.life + amount > self.max_life:
+            amount = self.max_life - self.life
+
+        if amount <= 0:
+            return
+
         self.life += amount
 
         surf = font(20).render(str(int(amount)), False, GREEN)

@@ -4,7 +4,7 @@ from typing import Callable, List, Optional, TYPE_CHECKING
 
 import pygame
 
-from constants import YELLOW
+from constants import WHITE, YELLOW
 from engine import Object
 from engine.assets import scale, tilemap
 from engine.utils import outline, overlay, random_in_surface
@@ -46,8 +46,8 @@ class Power:
         bg = self.background
         bg = scale(bg, scaling)
         if self.selected:
-            bg = outline(bg)
-            bg = outline(bg)
+            bg = outline(bg, WHITE)
+            bg = outline(bg, WHITE)
 
         fg = scale(self.sprite, scaling)
         if darken:

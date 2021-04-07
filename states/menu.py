@@ -8,10 +8,12 @@ from states.skillpickup import SkillPickUp
 
 
 class MenuState(MyState):
+    BG_MUSIC = "cozyFractal.mp3"
+
     def __init__(self):
         super().__init__()
 
-        self.add(Text("Destiny", ORANGE, 64, midtop=(W / 2, 32)))
+        self.add(Text("Kuglo", ORANGE, 64, midtop=(W / 2, 32)))
         self.add(
             Menu(
                 (W / 2, 150),
