@@ -21,6 +21,7 @@ IMAGES = ASSETS_DIR / "images"
 ANIMATIONS = ASSETS_DIR / "animations"
 FONTS = ASSETS_DIR / "fonts"
 MUSIC = ASSETS_DIR / "music"
+SFX = ASSETS_DIR / "sfx"
 
 UPWARDS = -90  # degrees
 DOWNWARDS = 90  # degrees

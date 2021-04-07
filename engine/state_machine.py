@@ -5,6 +5,7 @@ import pygame
 from pygame.locals import *
 
 from constants import MUSIC
+from engine.assets import play
 from engine.particles import ParticleSystem
 from engine.pygame_input import Button, Inputs, QuitEvent
 from engine.utils import mix
@@ -190,6 +191,7 @@ class StateMachine:
             previous.on_exit()
 
         if value is None:
+            play("back")
             if self.stack:
                 self.stack.pop()
             if self.stack:

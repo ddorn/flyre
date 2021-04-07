@@ -3,7 +3,7 @@ from random import gauss, random, uniform
 
 from constants import *
 from engine import ImageParticle, LineParticle, SquareParticle
-from engine.assets import font, tilemap
+from engine.assets import font, play, tilemap
 from engine.object import Object, SpriteObject
 from engine.utils import auto_crop, bounce, from_polar, vec2int
 
@@ -41,6 +41,8 @@ class Bullet(SpriteObject, BaseBullet):
     INITIAL_ROTATION = 90
 
     def __init__(self, pos, direction, owner, damage=100, speed=5, crit=False):
+        play("shoot")
+
         img = auto_crop(tilemap("sprites", 0, 0, 16))
 
         vel = pygame.Vector2(direction)
@@ -152,6 +154,8 @@ class Laser(Object, BaseBullet):
             self.owner.angle = self.angle
 
         # Shooting
+        if self.timer == self.preshoot_end:
+            play("laser")
         if self.timer > self.preshoot_end:
             state.particles.add(
                 LineParticle(20)

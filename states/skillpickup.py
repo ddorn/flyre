@@ -3,7 +3,7 @@ from pygame.locals import *
 
 from constants import H, ORANGE, RED, SCREEN, W, WHITE, YELLOW
 from engine import GFX
-from engine.assets import colored_text, text
+from engine.assets import colored_text, play, text
 from engine.pygame_input import Button, clamp
 from objects.skilltree import Node
 from states.my_state import MyState
@@ -39,6 +39,7 @@ class SkillPickUp(MyState):
         return inputs
 
     def error(self, msg):
+        play("denied")
         self.do_shake(5)
         self.error_message = msg
         self.error_timer = 2 * 60
@@ -50,15 +51,19 @@ class SkillPickUp(MyState):
         raise ValueError("No node is selected")
 
     def select(self, *args):
+        play("powerup")
         current = self.selected()
         current.power.apply(self.player)
-        # self.next_state = None
+        self.next_state = None
 
     def go_parent(self, *args):
         current = self.selected()
         if current.parent:
+            play("menu")
             current.power.selected = False
             current.parent.power.selected = True
+        else:
+            play("no")
 
     def go_child(self, *args):
         current = self.selected()
@@ -67,6 +72,7 @@ class SkillPickUp(MyState):
             child = current.children[idx]
 
             if child.reachable():
+                play("menu")
                 child.power.selected = True
                 current.power.selected = False
             else:
@@ -82,9 +88,16 @@ class SkillPickUp(MyState):
         if current.parent:
             siblings = current.parent.children
             idx = siblings.index(current)
-            idx = clamp(idx + offset, 0, len(siblings) - 1)
+            new = clamp(idx + offset, 0, len(siblings) - 1)
             current.power.selected = False
-            siblings[idx].power.selected = True
+            siblings[new].power.selected = True
+
+            if new != idx:
+                play("menu")
+            else:
+                play("no")
+        else:
+            play("no")
 
     def on_exit(self):
         for node in self.tree.bfs():

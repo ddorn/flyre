@@ -6,6 +6,25 @@ import pygame
 from constants import *
 
 
+VOLUMES = {"shoot": 0.4, "denied": 0.8, "hit": 0.7}
+
+
+@lru_cache()
+def _play(name):
+    file = SFX / (name + ".wav")
+    sound = pygame.mixer.Sound(file)
+
+    sound.set_volume(VOLUMES.get(name, 1.0) * 0.5)
+
+    return sound
+
+
+def play(name: str):
+    sound = _play(name)
+    sound.stop()
+    sound.play()
+
+
 @lru_cache()
 def image(name: str):
     file = IMAGES / (name + ".png")

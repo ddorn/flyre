@@ -1,5 +1,5 @@
 from glob import glob
-from random import choice, randint, uniform
+from random import choice, randint, random, uniform
 
 import pygame
 from pygame import Vector2
@@ -12,7 +12,7 @@ from engine import (
     Object,
     SpriteObject,
 )
-from engine.assets import font, text
+from engine.assets import font, play, text
 from engine.pygame_input import Button
 from engine.utils import chrange, random_in_rect
 
@@ -254,9 +254,13 @@ class Menu(Object):
         self.selected += amount
         self.selected %= len(self.actions)
 
+        play("menu")
+
     def select(self, *args):
         key = list(self.actions)[self.selected]
         self.actions[key]()
+
+        play("menu")
 
     def draw(self, gfx: GFX):
         super().draw(gfx)

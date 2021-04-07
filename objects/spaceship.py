@@ -4,6 +4,7 @@ import pygame
 
 from constants import WORLD, YELLOW
 from engine import App, LineParticle, SquareParticle
+from engine.assets import play
 from engine.object import Entity
 from engine.utils import (
     chrange,
@@ -51,7 +52,7 @@ class SpaceShip(Entity):
         self.max_speed = 3
         self.bullet_speed = 10
         self.bullet_damage = 100
-        self.crit_chance = 0.01
+        self.crit_chance = 0.1
         self.crit_mult = 3
         self.fire_chance = 0.02
         self.fire_dmg = 0.1
@@ -237,6 +238,7 @@ class SpaceShip(Entity):
         self.debuffs.difference_update(to_remove)
 
     def on_death(self, state):
+        play("explosion")
         for _ in range(200):
             state.particles.add(
                 SquareParticle()
@@ -256,6 +258,10 @@ class SpaceShip(Entity):
         if not self.invincible:
             self.damage(bullet.damage)
             self.vel += from_polar(self.KNOCK_BACK, bullet.angle)
+            if bullet.crit:
+                play("critical")
+            else:
+                play("hit")
 
 
 class HorizontalBehavior(SpaceShip):
