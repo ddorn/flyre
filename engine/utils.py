@@ -146,7 +146,7 @@ def prop_in_rect(rect: pygame.Rect, prop_x: float, prop_y: float):
         (-1, 0) => point on the top-line and one width on the leftj
     """
 
-    return rect.x - rect.w * prop_x, rect.y - rect.h * prop_y
+    return rect.x + rect.w * prop_x, rect.y + rect.h * prop_y
 
 
 def bounce(x, f=0.2, k=60):

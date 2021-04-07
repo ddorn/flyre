@@ -38,7 +38,7 @@ class Player(SpaceShip):
 
         super().__init__(pos, image, self.OFFSET, self.SIZE)
         self.max_speed = 5
-        self.debuffs.add(RegenDebuff(100000000, 0.01))
+        # self.debuffs.add(RegenDebuff(100000000, 0.01))
 
     def move_horizontally(self, axis: Axis):
         self.vel.x += axis.value * self.MAX_THRUST * 2

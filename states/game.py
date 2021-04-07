@@ -10,7 +10,7 @@ from engine.pygame_input import Axis, Button
 from engine.state_machine import State
 from engine.utils import auto_crop, mix, random_in_rect
 from level import LEVELS
-from objects import Planet, Title
+from objects import Enemy, Planet, Title
 from objects.player import Player
 from objects.skilltree import build_skill_tree, RegenDebuff
 from states.my_state import MyState
@@ -43,6 +43,14 @@ class GameState(MyState):
         inputs["pause"] = Button(pygame.K_p)
         inputs["pause"].on_press(self.set_pause)
 
+        def cheat(_):
+            self.lvl.skip = True
+            for en in self.get_all(Enemy):
+                en.alive = False
+
+        inputs["cheat"] = Button(pygame.K_c)
+        inputs["cheat"].on_press(cheat)
+
         return inputs
 
     def set_pause(self, *args):
@@ -65,10 +73,12 @@ class GameState(MyState):
     def script(self):
         for i, level in enumerate(LEVELS):
             # Draw level name
-            yield from self.add(Title(f"Level {i + 1}")).wait_until_dead()
+            self.add(Title(f"Level {i + 1}", duration=2 * 60))
 
             # Run the level
-            yield from level(self).script()
+            self.lvl = level(self)
+            yield from self.lvl.script()
+            yield from self.lvl.wait_until_dead()
 
             # Write cleared
             yield from self.add(

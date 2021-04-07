@@ -58,7 +58,7 @@ class SpaceShip(Entity):
         self.fire_chance = 0.02
         self.fire_dmg = 0.1
         self.fire_duration = 2 * 60
-        self.nb_bullets = 5
+        self.nb_bullets = 1
 
         # TODO: Not implemented !
         self.shield = False
@@ -164,16 +164,18 @@ class SpaceShip(Entity):
             * chrange(dist, (0, WORLD.height - up), (0, 1))
         )
 
+    def random_but_high(self) -> pygame.Vector2:
+        margin = 15
+        rect = WORLD.inflate(-2 * margin, -2 * margin)
+        rect.height = WORLD.height / 2 - 2 * margin
+        return random_in_rect(rect)
+
     def go_to(self, goal=None, precision=30):
 
-        # Go to a random start location
         if goal is None:
-            margin = 15
-            rect = WORLD.inflate(-2 * margin, -2 * margin)
-            rect.height = WORLD.height / 2 - 2 * margin
-            goal = random_in_rect(rect)
+            goal = self.random_but_high()
 
-        while self.pos.distance_to(goal) > precision:
+        while self.center.distance_to(goal) > precision:
 
             thrust = self.force_to_avoid_all_ships()
             if thrust.length() == 0:
@@ -182,6 +184,25 @@ class SpaceShip(Entity):
                 thrust += self.force_to_accelerate() * 0.1
                 thrust += self.force_slow_down_around(goal, 60)
                 thrust += self.force_to_avoid_walls(30)
+            else:
+                self.state.debug.point(*self.center, "green")
+
+            clamp_length(thrust, self.MAX_THRUST)
+
+            self.vel += thrust
+
+            yield
+
+    def go_straight_to(self, goal=None, precision=30):
+        if goal is None:
+            goal = self.random_but_high()
+
+        while self.center.distance_to(goal) > precision:
+
+            thrust = self.force_to_avoid_all_ships()
+            if thrust.length() == 0:
+                self.state.debug.point(*self.center, "red")
+                thrust += (goal - self.center).normalize() * self.MAX_THRUST
             else:
                 self.state.debug.point(*self.center, "green")
 
@@ -230,7 +251,7 @@ class SpaceShip(Entity):
         direction.scale_to_length(self.MAX_THRUST * 3)
         self.max_speed *= 4
         rotation = self.rotation
-        while WORLD.colliderect(self.rect):
+        while WORLD.inflate(100, 100).colliderect(self.rect):
             self.vel += direction
             self.rotation = rotation
             self.state.particles.add(self.get_charge_particle(1))
@@ -258,8 +279,6 @@ class SpaceShip(Entity):
         for ship in state.get_all(SpaceShip):
             if ship is self:
                 continue
-
-            print(ship, self)
 
             radius_sum = self.size.length() / 2 + ship.size.length() / 2
             if self.center.distance_to(ship.center) < radius_sum:

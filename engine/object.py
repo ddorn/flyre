@@ -24,6 +24,9 @@ class Object:
         self.scripts = {self.script()}
         self.state = None
 
+    def __str__(self):
+        return f"{self.__class__.__name__}(at {self.pos})"
+
     def script(self):
         yield
 

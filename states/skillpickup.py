@@ -135,5 +135,5 @@ class SkillPickUp(MyState):
             s = text(current.power.name, 20, YELLOW)
             r = gfx.blit(s, midtop=(W / 2, bottom_rect.y + 6))
 
-            s = text(current.power.description, 15, WHITE, "pixelmillennium")
+            s = text(current.power.description, 14, WHITE, "pixelmillennium")
             gfx.blit(s, midtop=r.midbottom)

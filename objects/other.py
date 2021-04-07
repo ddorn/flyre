@@ -100,8 +100,9 @@ class Debug(Object):
         self.points = []
         self.vectors = []
         self.rects = []
+        self.texts = []
 
-        self.lasts = [[], [], []]
+        self.lasts = [[], [], [], []]
 
         self.enabled = DEBUG
         self.paused = False
@@ -124,9 +125,12 @@ class Debug(Object):
             self.rects.append((rect, color))
         return rect
 
+    def text(self, obj):
+        self.texts.append(obj)
+
     def draw(self, gfx):
         if self.paused:
-            self.points, self.vectors, self.rects = self.lasts
+            self.points, self.vectors, self.rects, self.texts = self.lasts
 
         for (x, y, color) in self.points:
             pygame.draw.circle(gfx.surf, color, (x, y), 2)
@@ -137,13 +141,22 @@ class Debug(Object):
         for rect, color in self.rects:
             pygame.draw.rect(gfx.surf, color, rect, 1)
 
-        self.lasts = [self.points, self.vectors, self.rects]
+        y = 3
+        for obj in self.texts:
+            s = text(str(obj), 7, WHITE, "pixelmillennium")
+            r = gfx.blit(s, topleft=(3, y))
+            y = r.bottom
+
+        self.lasts = [self.points, self.vectors, self.rects, self.texts]
         self.points = []
         self.vectors = []
         self.rects = []
+        self.texts = []
 
 
 class Title(Object):
+    Z = 10
+
     def __init__(self, text, color=YELLOW, duration=4 * 60, animation="enlarge"):
         self.duration = duration
         self.color = color
@@ -231,6 +244,8 @@ class Title(Object):
 
 
 class Menu(Object):
+    Z = 10
+
     def __init__(self, midtop, actions: dict):
         super().__init__((0, 0))
 
@@ -279,6 +294,8 @@ class Menu(Object):
 
 
 class Text(SpriteObject):
+    Z = 10
+
     def __init__(self, txt, color, size, font_name=None, **anchor):
 
         img = text(txt, size, color, font_name)

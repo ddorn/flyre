@@ -69,13 +69,12 @@ class LaserEnemy(Enemy):
         state = App.current_state()
 
         while True:
-            yield from self.go_to()
-            yield from self.hover_around(gauss(5 * 60, 30))
+            yield from self.go_straight_to()
+            yield from self.hover_around(gauss(2 * 60, 20))
             yield from self.slow_down_and_stop()
 
             bullet = self.fire(state, self.state.player)
-            while bullet.alive:
-                yield
+            bullet.wait_until_dead()
 
 
 class ChargeEnemy(Enemy):
@@ -90,7 +89,7 @@ class ChargeEnemy(Enemy):
     def script(self):
         yield from self.go_to()
 
-        hover_duration = gauss(6 * 60, 60)
+        hover_duration = gauss(0 * 60, 30)
         yield from self.hover_around(hover_duration)
         yield from self.slow_down_and_stop()
 
@@ -100,6 +99,6 @@ class ChargeEnemy(Enemy):
             self.state.particles.add(self.get_charge_particle(t / prep_len))
             yield
 
-        self.charge_to_player()
+        yield from self.charge_to_player()
 
         self.alive = False

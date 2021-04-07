@@ -4,7 +4,7 @@ from functools import lru_cache
 import pygame
 
 from constants import *
-
+from engine.utils import overlay
 
 VOLUMES = {"shoot": 0.4, "denied": 0.8, "hit": 0.7}
 
@@ -14,7 +14,7 @@ def _play(name):
     file = SFX / (name + ".wav")
     sound = pygame.mixer.Sound(file)
 
-    sound.set_volume(VOLUMES.get(name, 1.0) * 0.5)
+    sound.set_volume(VOLUMES.get(name, 1.0) * 0.1)
 
     return sound
 
@@ -28,7 +28,11 @@ def play(name: str):
 @lru_cache()
 def image(name: str):
     file = IMAGES / (name + ".png")
-    return pygame.image.load(file)
+    img = pygame.image.load(file)
+
+    if name.startswith("planet"):
+        return overlay(img, (0, 0, 0, 100))
+    return img
 
 
 @lru_cache(10000)

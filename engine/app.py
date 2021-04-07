@@ -26,6 +26,7 @@ class App(StateMachine):
     FPS = 60
     NAME = "Pygame window"
     MAIN_APP: "App" = None
+    MOUSE_VISIBLE = False
 
     def __init__(self, initial_state: Type[State], resizing: Screen):
         App.MAIN_APP = self
@@ -34,6 +35,8 @@ class App(StateMachine):
         self.screen = resizing
         self.gfx = GFX(self.screen.draw_surface)
         pygame.display.set_caption(self.NAME)
+
+        pygame.mouse.set_visible(self.MOUSE_VISIBLE)
 
         super().__init__(initial_state)
 
