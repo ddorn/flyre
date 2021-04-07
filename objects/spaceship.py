@@ -18,6 +18,8 @@ from engine.utils import (
 
 __all__ = ["SpaceShip"]
 
+from objects.bullets import Bomb
+
 
 class Cooldown:
     def __init__(self, delay):
@@ -47,9 +49,8 @@ class SpaceShip(Entity):
         size=(1, 1),
         vel=(0, 0),
         rotation=0,
-        max_life=1000,
     ):
-        super().__init__(pos, image, offset, size, vel, rotation, max_life)
+        super().__init__(pos, image, offset, size, vel, rotation)
 
         self.max_speed = 3
         self.bullet_speed = 10
@@ -134,7 +135,7 @@ class SpaceShip(Entity):
 
     def force_to_avoid_all_ships(self):
         thrust = pygame.Vector2()
-        for ship in self.state.get_all(SpaceShip):
+        for ship in self.state.get_all(SpaceShip, Bomb):
             if ship is self:
                 continue
             r = ship.size.length() + self.size.length()

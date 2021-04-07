@@ -9,7 +9,6 @@ from engine.utils import auto_crop, bounce, from_polar, vec2int
 
 __all__ = ["Bullet", "Laser", "DebuffBullet"]
 
-from .spaceship import SpaceShip
 
 from objects.skilltree import Debuff
 
@@ -75,9 +74,7 @@ class Bullet(SpriteObject, BaseBullet):
                 state.particles.add(
                     LineParticle(gauss(8, 2), YELLOW)
                     .builder()
-                    .at(
-                        self.pos, gauss(self.angle, 20)
-                    )  # the angle is 90-self.rotation
+                    .at(self.pos, gauss(self.angle + 180, 20))
                     .velocity(gauss(5, 1))
                     .sized(uniform(1, 3))
                     .living(10)
@@ -208,6 +205,8 @@ class Bomb(Object, BaseBullet):
         self.timer = timer
 
     def logic(self, state):
+        from .spaceship import SpaceShip
+
         super().logic(state)
         self.animation.logic()
 

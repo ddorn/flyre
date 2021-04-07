@@ -1,5 +1,6 @@
-from random import uniform
-from typing import Tuple, Type, Union
+from functools import partial
+from random import choice, uniform
+from typing import Callable, Tuple, Type, Union
 
 from constants import WORLD
 from engine.utils import prop_in_rect
@@ -13,7 +14,9 @@ class Level:
         self.state = state
         self.skip = False
 
-    def spawn(self, enemy: Type[Enemy], pos: Union[int, Tuple, None] = None, *args):
+    def spawn(
+        self, enemy: Type[Enemy] = None, pos: Union[int, Tuple, None] = None, *args
+    ):
         positions = [
             (-0.1, 0.2),  # -2, left side
             (0.2, -0.2),  # -1, left up
@@ -28,7 +31,22 @@ class Level:
             pos = positions[pos + 2]
             pos = prop_in_rect(WORLD, *pos)
 
+        if enemy is None:
+            enemy = self.random_enemy()
+
         return self.state.add(enemy(pos, *args))
+
+    def random_enemy(self) -> Enemy:
+        # noinspection PyTypeChecker
+        return choice(
+            [
+                Enemy,
+                LaserEnemy,
+                BomberEnemy,
+                ChargeEnemy,
+                lambda *args: CopyEnemy(*args, player=self.state.player),
+            ]
+        )
 
     def any_alive(self):
         return any(e.alive for e in self.state.get_all(Enemy))
@@ -55,6 +73,8 @@ class Level:
 
 
 class Level1(Level):
+    """First level, "tutorial"."""
+
     def script(self):
         self.spawn(BomberEnemy)
         yield from self.wait_until_dead()
@@ -68,6 +88,8 @@ class Level1(Level):
 
 
 class Level2(Level):
+    """Introduces lasers"""
+
     def script(self):
         self.spawn(Enemy, -2)
         self.spawn(LaserEnemy, 0)
@@ -85,7 +107,12 @@ class Level2(Level):
 
 
 class Level3(Level):
+    """Introduces bomber."""
+
     def script(self):
+        self.spawn(BomberEnemy)
+        yield from self.wait(4)
+
         for i in range(10):
 
             if i % 2 == 0:
@@ -93,16 +120,23 @@ class Level3(Level):
             else:
                 self.spawn(LaserEnemy)
 
-            yield from self.wait(5 - i / 2)
+            if i in (5, 9):
+                self.spawn(BomberEnemy)
+
+            yield from self.wait(2)
         yield from self.wait(8)
 
         self.spawn(Enemy, -1)
         self.spawn(Enemy, 1)
         self.spawn(LaserEnemy, -2)
         self.spawn(LaserEnemy, 2)
+        self.spawn(BomberEnemy)
+        self.spawn(BomberEnemy)
 
 
 class Level4(Level):
+    """Introducing chargers."""
+
     def script(self):
 
         self.spawn(ChargeEnemy, 1)
@@ -118,5 +152,24 @@ class Level4(Level):
             yield from self.wait(5 - i / 2)
 
 
+class Level5(Level):
+    """Introducing Copy."""
+
+    def script(self):
+        player = self.state.player
+        self.spawn(CopyEnemy, 0, player)
+        yield from self.wait_until_dead()
+
+        self.spawn(CopyEnemy, -2, player)
+        self.spawn(CopyEnemy, 2, player)
+
+        yield from self.wait(6)
+
+        for i in range(10):
+            self.spawn()
+            self.spawn(Enemy)
+            yield from self.wait(3)
+
+
 LEVELS = Level.__subclasses__()
-# LEVELS = [Level4]
+LEVELS = [Level5]

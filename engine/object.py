@@ -145,6 +145,7 @@ class SpriteObject(Object):
         """Convert a position in the sprite to its world coordinates."""
         pos = (
             pygame.Vector2(pos)
+            + (0.5, 0.5)  # To get the center of the pixel
             - pygame.Vector2(self.base_image.get_size()) / 2 / self.SCALE
         )
         pos.rotate_ip(-self.rotation)
@@ -157,6 +158,7 @@ class Entity(SpriteObject):
     """An object with heath and a sprite."""
 
     INVICIBILITY_DURATION = 0
+    INITIAL_LIFE = 1000
 
     def __init__(
         self,
@@ -169,7 +171,7 @@ class Entity(SpriteObject):
         max_life=1000,
     ):
         super().__init__(pos, image, offset, size, vel, rotation)
-        self.max_life = max_life
+        self.max_life = self.INITIAL_LIFE
         self.life = max_life
         self.last_hit = 100000000
 
@@ -206,6 +208,8 @@ class Entity(SpriteObject):
         self.last_hit = 0
 
         self.life -= amount
+        if self.life < 0:
+            self.life = 0
 
         surf = font(20).render(str(int(amount)), False, RED)
 

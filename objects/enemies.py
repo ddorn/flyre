@@ -1,14 +1,15 @@
-from random import gauss, randrange, uniform
+from random import gauss, random, randrange, uniform
 
 from pygame import Vector2
 
 from .spaceship import SpaceShip
-from constants import WORLD
-from engine import App
+from constants import WORLD, YELLOW
+from engine import App, SquareParticle
 from engine.assets import tilemap
 from engine.utils import (
     angle_towards,
     clamp_length,
+    from_polar,
     random_in_rect,
     random_in_rect_and_avoid,
 )
@@ -88,6 +89,8 @@ class ChargeEnemy(Enemy):
     GUN = (16.5, 13)
     CONTACT_DAMAGE = 400
 
+    INITIAL_LIFE = 750
+
     def __init__(self, pos):
         super().__init__(pos, 1)
 
@@ -116,7 +119,7 @@ class CopyEnemy(Enemy):
     SIZE = Vector2(17, 13) * SCALE
     OFFSET = Vector2(-7, -11)
     JET1 = Vector2(14, 22)
-    JET2 = Vector2(15, 22)
+    JET2 = Vector2(16, 22)
     GUN = Vector2(15, 5)
     GUN_LEFT = Vector2(11, 11)
     GUN_RIGHT = Vector2(19, 11)
@@ -124,11 +127,51 @@ class CopyEnemy(Enemy):
     GUN_FAR_RIGHT = Vector2(22, 14)
 
     def __init__(self, pos, player):
+        self.INITIAL_LIFE = player.max_life
         super().__init__(pos, 3)
 
         self.player = player
 
-    # TODO: particle + same bullets as the player
+    def fire(self, state, angle):
+        # Copied from player
+        guns = []
+        if self.nb_bullets % 2 == 1:
+            guns.append(self.GUN)
+        if self.nb_bullets > 1:
+            guns.extend([self.GUN_LEFT, self.GUN_RIGHT])
+        if self.nb_bullets > 3:
+            guns.extend([self.GUN_FAR_LEFT, self.GUN_FAR_RIGHT])
+
+        for pos in guns:
+            crit = random() < self.player.crit_chance
+            state.add(
+                Bullet(
+                    self.sprite_to_screen(pos) + (1, 0),
+                    from_polar(1, self.angle),
+                    self,
+                    self.player.bullet_damage
+                    * (1 if not crit else self.player.crit_mult),
+                    self.player.bullet_speed,
+                    crit,
+                )
+            )
+
+    def logic(self, state):
+        for jet in (self.JET1, self.JET2):
+            state.debug.point(*self.sprite_to_screen(jet))
+            state.particles.add(
+                SquareParticle(YELLOW)
+                .builder()
+                .at(self.sprite_to_screen(jet), gauss(self.angle + 180, 10))
+                .sized(4)
+                .living(5)
+                .constant_force(self.vel / 2)
+                .velocity(gauss(4, 0.6),)
+                .anim_fade()
+                .build()
+            )
+
+        super().logic(state)
 
     def script(self):
         yield from self.go_straight_to()
@@ -139,6 +182,8 @@ class CopyEnemy(Enemy):
 class BomberEnemy(Enemy):
     SIZE = Vector2(22, 22) * Enemy.SCALE
     OFFSET = (-5, -5)
+
+    INITIAL_LIFE = 2000
 
     def __init__(self, pos):
         super().__init__(pos, 4)

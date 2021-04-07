@@ -397,10 +397,11 @@ class CircleParticle(DrawnParticle):
 
 class SquareParticle(DrawnParticle):
     def draw(self, surf):
+        pos = self.pos - (self.size / 2, self.size / 2)
         if self.color.a < 255:
-            gfx.box(surf, (self.pos, (self.size, self.size)), self.color)
+            gfx.box(surf, (pos, (self.size, self.size)), self.color)
         else:
-            pygame.draw.rect(surf, self.color, (self.pos, (self.size, self.size)))
+            pygame.draw.rect(surf, self.color, (pos, (self.size, self.size)))
 
 
 class PolygonParticle(DrawnParticle):

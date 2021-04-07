@@ -115,7 +115,7 @@ class Debug(Object):
             self.points, self.vectors, self.rects, self.texts = self.lasts
 
         for (x, y, color) in self.points:
-            pygame.draw.circle(gfx.surf, color, (x, y), 2)
+            pygame.draw.circle(gfx.surf, color, (x, y), 1)
 
         for (anchor, vec, color) in self.vectors:
             pygame.draw.line(gfx.surf, color, anchor, anchor + vec)

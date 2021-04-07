@@ -22,7 +22,7 @@ class Player(SpaceShip):
     SIZE = pygame.Vector2(17, 13) * SCALE
     OFFSET = pygame.Vector2(-7, -11)
     JET1 = pygame.Vector2(14, 22)
-    JET2 = pygame.Vector2(15, 22)
+    JET2 = pygame.Vector2(16, 22)
     GUN = Vector2(15, 5)
     GUN_LEFT = Vector2(11, 11)
     GUN_RIGHT = Vector2(19, 11)
@@ -113,8 +113,6 @@ class Player(SpaceShip):
 
         self.pos.x = clamp(self.pos.x, WORLD.left, WORLD.right - self.size.x)
         self.pos.y = clamp(self.pos.y, WORLD.top, WORLD.bottom - self.size.y)
-
-        state.debug.point(*self.center)
 
         # Handle the healt bar
         self.health_bar.logic(state)
