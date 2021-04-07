@@ -11,6 +11,7 @@ from engine.state_machine import State
 from engine.utils import auto_crop, mix, random_in_rect
 from level import LEVELS
 from objects import Enemy, Planet, Title
+from objects.other import HealthBar
 from objects.player import Player
 from objects.skilltree import build_skill_tree, RegenDebuff
 from states.my_state import MyState
@@ -22,6 +23,9 @@ class GameState(MyState):
         super().__init__()
 
         self.player = self.add(Player((100, 200)))
+        self.add(
+            HealthBar((INFO_RECT.topleft + Vector2(9, 347), (180, 5)), RED, self.player)
+        )
 
         self.running_script = self.script()
 

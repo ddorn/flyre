@@ -98,12 +98,17 @@ class State:
         if self.BG_COLOR:
             gfx.fill(self.BG_COLOR)
 
+        did_draw_particles = False
         for z in sorted(set(o.Z for o in self.objects)):
             for obj in self.objects:
                 if z == obj.Z:
                     obj.draw(gfx)
+                if z >= 0 and not did_draw_particles:
+                    self.particles.draw(gfx.surf)
+                    did_draw_particles = True
 
-        self.particles.draw(gfx.surf)
+        if not did_draw_particles:
+            self.particles.draw(gfx.surf)
 
         if self.shake:
             s = 3

@@ -11,6 +11,7 @@ from engine.pygame_input import Axis
 from engine.utils import clamp, clamp_length, from_polar
 from objects import Bullet, SpaceShip
 from objects.bullets import DebuffBullet
+from objects.other import HealthBar
 from objects.skilltree import build_skill_tree, FireDebuff, RegenDebuff
 
 
@@ -38,6 +39,8 @@ class Player(SpaceShip):
 
         super().__init__(pos, image, self.OFFSET, self.SIZE)
         self.max_speed = 5
+
+        self.health_bar = HealthBar((0, 0, 30, 1), (255, 0, 0, 200), self)
         # self.debuffs.add(RegenDebuff(100000000, 0.01))
 
     def move_horizontally(self, axis: Axis):
@@ -110,8 +113,14 @@ class Player(SpaceShip):
 
         state.debug.point(*self.center)
 
+        # Handle the healt bar
+        self.health_bar.logic(state)
+        self.health_bar.center = self.pos + (self.size.x / 2, self.size.y + 3)
+        self.health_bar.center = self.center + (0, -self.size.y / 2 - 13)
+
     def draw(self, gfx):
         super().draw(gfx)
+        self.health_bar.draw(gfx)
 
     def did_kill(self, enemy):
         bonus = 100

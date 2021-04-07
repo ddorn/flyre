@@ -1,4 +1,5 @@
 from glob import glob
+from math import ceil
 from random import choice, randint, random, uniform
 
 import pygame
@@ -302,3 +303,50 @@ class Text(SpriteObject):
         pos = img.get_rect(**anchor).topleft
 
         super().__init__(pos, img, size=img.get_size())
+
+
+class HealthBar(Object):
+    Z = 10
+
+    def __init__(self, rect, color, entity):
+        rect = pygame.Rect(rect)
+        super().__init__(rect.topleft, rect.size)
+
+        self.color = pygame.Color(color)
+        self.entity = entity
+
+        self.flash_size = 0
+        self.flash_duration = -1
+        self.last_health = entity.life
+
+    def logic(self, state):
+        self.flash_duration -= 1
+
+        loss = self.last_health - self.entity.life
+        self.flash_size += loss
+
+        if loss > 0:
+            self.flash_duration = 10
+
+        if self.flash_duration <= 0:
+            self.flash_size -= 1
+            self.flash_size = max(0, self.flash_size - 3)
+
+        self.last_health = self.entity.life
+
+    def draw(self, gfx: "GFX"):
+
+        prop = self.entity.life / self.entity.max_life
+        width = ceil(self.size.x * prop)
+        flash = ceil(self.size.x * self.flash_size / self.entity.max_life)
+        lost = self.size.x - width - flash
+
+        x, y = self.pos
+        gfx.box((*self.pos, width, self.size.y), self.color)
+        if flash > 0:
+            gfx.box((x + width, y, flash, self.size.y), WHITE + (self.color.a,))
+
+        if lost > 0:
+            gfx.box(
+                (x + width + flash, y, lost, self.size.y,), (0, 0, 0, self.color.a),
+            )
