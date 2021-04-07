@@ -10,7 +10,7 @@ VOLUMES = {"shoot": 0.4, "denied": 0.8, "hit": 0.7}
 
 
 @lru_cache()
-def _play(name):
+def sound(name):
     file = SFX / (name + ".wav")
     sound = pygame.mixer.Sound(file)
 
@@ -20,14 +20,15 @@ def _play(name):
 
 
 def play(name: str):
-    sound = _play(name)
-    sound.stop()
-    sound.play()
+    s = sound(name)
+    s.stop()
+    s.play()
 
 
 @lru_cache()
 def image(name: str):
     file = IMAGES / (name + ".png")
+    print(f"Load {file}")
     img = pygame.image.load(file)
 
     if name.startswith("planet"):

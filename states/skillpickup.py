@@ -54,7 +54,7 @@ class SkillPickUp(MyState):
         play("powerup")
         current = self.selected()
         current.power.apply(self.player)
-        self.next_state = None
+        self.pop_state()
 
     def go_parent(self, *args):
         current = self.selected()
@@ -82,6 +82,8 @@ class SkillPickUp(MyState):
                     (" before higher level skills.", RED),
                 )
                 self.error(msg)
+        else:
+            play("no")
 
     def go_to_sibling(self, offset):
         current = self.selected()
@@ -100,6 +102,7 @@ class SkillPickUp(MyState):
             play("no")
 
     def on_exit(self):
+        super().on_exit()
         for node in self.tree.bfs():
             node.power.selected = False
 

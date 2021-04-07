@@ -108,7 +108,8 @@ class Debug(Object):
         return rect
 
     def text(self, obj):
-        self.texts.append(obj)
+        if self.enabled:
+            self.texts.append(obj)
 
     def draw(self, gfx):
         if self.paused:
@@ -278,7 +279,7 @@ class Menu(Object):
 class Text(SpriteObject):
     Z = 10
 
-    def __init__(self, txt, color, size, font_name=None, **anchor):
+    def __init__(self, txt, color, size: int, font_name=None, **anchor):
 
         img = text(txt, size, color, font_name)
         pos = img.get_rect(**anchor).topleft

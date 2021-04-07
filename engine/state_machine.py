@@ -1,5 +1,6 @@
+from enum import Enum
 from random import randint
-from typing import Iterator, Optional, Type, TypeVar, Union
+from typing import List, Optional, Tuple, Type, TypeVar, Union
 
 import pygame
 from pygame.locals import *
@@ -15,7 +16,15 @@ T = TypeVar("T")
 __all__ = ["State", "StateMachine"]
 
 
+class StateOperations(Enum):
+    NOP = 0
+    POP = 1
+    PUSH = 2
+    REPLACE = 3
+
+
 class State:
+    FPS = 60
     BG_COLOR = "black"
     BG_MUSIC = None
     BG_COLORS = []
@@ -26,7 +35,7 @@ class State:
         self.add_later = []
         self.add_object_lock = False
         self.objects = set()
-        self.next_state = self
+        self.next_state = (StateOperations.NOP, self)
         self.shake = 0
 
         self.particles = ParticleSystem()
@@ -36,10 +45,12 @@ class State:
 
         self.inputs = Inputs()
 
+        self.running_script = self.script()
+
     def create_inputs(self):
         inputs = Inputs()
         inputs["quit"] = Button(QuitEvent(), K_ESCAPE, K_q)
-        inputs["quit"].on_press(lambda e: setattr(self, "next_state", None))
+        inputs["quit"].on_press(self.pop_state)
 
         inputs["debug"] = Button(K_F11)
         inputs["debug"].on_press(self.debug.toggle)
@@ -57,7 +68,7 @@ class State:
 
     def on_resume(self):
         self.inputs = self.create_inputs()
-        self.next_state = self
+        self.next_state = (StateOperations.NOP, None)
         if self.BG_MUSIC:
             pygame.mixer.music.load(MUSIC / self.BG_MUSIC)
             # pygame.mixer.music.set_volume(VOLUME['BG_MUSIC'] * Settings().music)
@@ -66,13 +77,30 @@ class State:
     def on_exit(self):
         pass
 
+    def script(self):
+        """Script must be a generator where each yield will correspond to a frame.
+
+        Useful to implement sequential logics.
+        """
+        yield
+
     def logic(self):
         """All the logic of the state happens here.
 
-        To change to an other state, you need to set self.next_state"""
+        To change to an other state, you need to call any of:
+            - self.pop_state()
+            - self.push_state(new)
+            - self.replace_state(new)
+       """
         self.timer += 1
 
         self.update_bg()
+
+        try:
+            r = next(self.running_script)
+            assert r is None, f"You are returning objects from {self.running_script}"
+        except StopIteration:
+            pass
 
         # Add all object that have been queued
         self.add_object_lock = False
@@ -153,12 +181,6 @@ class State:
         assert frames >= 0
         self.shake += frames
 
-    def go_to_callback(self, other_state: Type["State"], *args):
-        def callback(*_):
-            self.next_state = other_state(*args)
-
-        return callback
-
     def update_bg(self):
         if self.BG_COLORS:
             first = self.timer // self.BG_TRANSITION_TIME % len(self.BG_COLORS)
@@ -168,12 +190,32 @@ class State:
 
             self.BG_COLOR = bg
 
+    # State operations
+
+    def pop_state(self, *_):
+        """Return to the previous state in the state stack."""
+        self.next_state = (StateOperations.POP, None)
+
+    def push_state(self, new: "State"):
+        """Add a state to the stack that will be switched to."""
+        self.next_state = (StateOperations.PUSH, new)
+
+    def replace_state(self, new: "State"):
+        """Replace the current state with an other one. Equivalent of a theoric pop then push."""
+        self.next_state = (StateOperations.REPLACE, new)
+
+    def push_state_callback(self, other_state: Type["State"], *args):
+        def callback(*_):
+            self.next_state = (StateOperations.PUSH, other_state(*args))
+
+        return callback
+
 
 class StateMachine:
     def __init__(self, initial_state: Type[State]):
         self._state: Union[State, None] = None
-        self.stack = []
-        self.state = initial_state()
+        self.stack: List[State] = []
+        self.state = (StateOperations.PUSH, initial_state())
 
     @property
     def running(self):
@@ -187,20 +229,26 @@ class StateMachine:
         return None
 
     @state.setter
-    def state(self, value: Optional[State]):
-        previous = self.state
-        if value is previous:
-            return
+    def state(self, value: Tuple[StateOperations, Optional[State]]):
+        op, new = value
 
-        if previous is not None:
-            previous.on_exit()
-
-        if value is None:
-            play("back")
+        if op == StateOperations.NOP:
+            pass
+        elif op == StateOperations.POP:
             if self.stack:
-                self.stack.pop()
+                prev = self.stack.pop()
+                prev.on_exit()
+                play("back")
             if self.stack:
-                self.state.on_resume()
-        else:
-            self.stack.append(value)
-            value.on_resume()
+                self.stack[-1].on_resume()
+        elif op == StateOperations.REPLACE:
+            if self.stack:
+                prev = self.stack.pop()
+                prev.on_exit()
+            self.stack.append(new)
+            new.on_resume()
+        elif op == StateOperations.PUSH:
+            if self.stack:
+                self.stack[-1].on_exit()
+            self.stack.append(new)
+            new.on_resume()

@@ -253,5 +253,4 @@ def random_in_rect_and_avoid(
         else:
             return pos
 
-    print("DEFAULT")
     return default

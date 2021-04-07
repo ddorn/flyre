@@ -27,7 +27,7 @@ class PauseState(State):
         )
 
     def restart(self):
-        self.next_state = None
+        self.pop_state()
         self.game_state.__init__()
 
     def create_inputs(self):
@@ -38,7 +38,7 @@ class PauseState(State):
         return inputs
 
     def stop_pause(self, *args):
-        self.next_state = None
+        self.pop_state()
 
     def draw(self, gfx: GFX):
         self.game_state.draw(gfx)

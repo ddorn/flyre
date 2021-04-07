@@ -1,4 +1,5 @@
 from functools import partial
+from time import time
 
 from pygame import Vector2
 from random import shuffle, uniform
@@ -26,8 +27,6 @@ class GameState(MyState):
         self.add(
             HealthBar((INFO_RECT.topleft + Vector2(9, 347), (180, 5)), RED, self.player)
         )
-
-        self.running_script = self.script()
 
     def create_inputs(self):
         inputs = super().create_inputs()
@@ -60,7 +59,7 @@ class GameState(MyState):
     def set_pause(self, *args):
         from states.pause import PauseState
 
-        self.next_state = PauseState(self)
+        self.push_state(PauseState(self))
 
     def on_resume(self):
         super().on_resume()
@@ -68,11 +67,6 @@ class GameState(MyState):
 
     def on_exit(self):
         self.debug.paused = True
-
-    def logic(self):
-
-        next(self.running_script)
-        super().logic()
 
     def script(self):
         for i, level in enumerate(LEVELS):
@@ -89,7 +83,7 @@ class GameState(MyState):
                 Title("Level cleared", GREEN, animation="blink")
             ).wait_until_dead()
 
-            self.next_state = SkillPickUp(self.player)
+            self.push_state(SkillPickUp(self.player))
 
     def draw(self, gfx: "GFX"):
         super().draw(gfx)

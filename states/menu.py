@@ -18,8 +18,8 @@ class MenuState(MyState):
             Menu(
                 (W / 2, 150),
                 {
-                    "Play": self.go_to_callback(GameState),
-                    "Highscores": self.go_to_callback(SkillPickUp, Player((0, 0))),
+                    "Play": self.push_state_callback(GameState),
+                    "Highscores": self.push_state_callback(SkillPickUp, Player((0, 0))),
                     "Settings": lambda: 0,
                     "Quit": App.MAIN_APP.quit,
                 },

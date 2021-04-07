@@ -36,17 +36,18 @@ class Level:
 
         return self.state.add(enemy(pos, *args))
 
+    def all_enemy_types(self):
+        return [
+            Enemy,
+            LaserEnemy,
+            BomberEnemy,
+            ChargeEnemy,
+            lambda *args: CopyEnemy(*args, player=self.state.player),
+        ]
+
     def random_enemy(self) -> Enemy:
         # noinspection PyTypeChecker
-        return choice(
-            [
-                Enemy,
-                LaserEnemy,
-                BomberEnemy,
-                ChargeEnemy,
-                lambda *args: CopyEnemy(*args, player=self.state.player),
-            ]
-        )
+        return choice(self.all_enemy_types())
 
     def any_alive(self):
         return any(e.alive for e in self.state.get_all(Enemy))
@@ -64,8 +65,9 @@ class Level:
         return uniform(0, WORLD.right), -40
 
     def wait(self, seconds):
-        for _ in range(int(seconds * 60)):
-            if not self.skip:
+        yield  # Enemies may have not been added to the state yet.
+        for _ in range(int(seconds * 60 - 1)):
+            if self.any_alive() and not self.skip:
                 yield
 
     def script(self):
@@ -153,7 +155,29 @@ class Level4(Level):
 
 
 class Level5(Level):
-    """Introducing Copy."""
+    """Introduces Copy"""
+
+    def script(self):
+        player = self.state.player
+        self.spawn(CopyEnemy, 0, player)
+        yield from self.wait_until_dead()
+
+        self.spawn(CopyEnemy, -2, player)
+        self.spawn(CopyEnemy, 2, player)
+        yield from self.wait_until_dead()
+
+        self.spawn(CopyEnemy, -2, player)
+        self.spawn(Enemy, 0)
+        self.spawn(Enemy, 2)
+
+        yield from self.wait(10)
+
+        for e in self.all_enemy_types():
+            self.spawn(e)
+
+
+class Level7(Level):
+    """Hell breaks loose"""
 
     def script(self):
         player = self.state.player
@@ -171,5 +195,18 @@ class Level5(Level):
             yield from self.wait(3)
 
 
+class Level8(Level):
+    """Hell breaks loose...r"""
+
+    def script(self):
+        player = self.state.player
+
+        for _ in range(2):
+            for e in self.all_enemy_types():
+                self.spawn(e)
+                self.spawn(CopyEnemy, None, player)
+                yield from self.wait(4)
+
+
 LEVELS = Level.__subclasses__()
-LEVELS = [Level5]
+# LEVELS = [Level5]

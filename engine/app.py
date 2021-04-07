@@ -23,7 +23,6 @@ class App(StateMachine):
     All the game logic and randering is done by the states themselves.
     """
 
-    FPS = 60
     NAME = "Pygame window"
     MAIN_APP: "App" = None
     MOUSE_VISIBLE = False
@@ -52,7 +51,7 @@ class App(StateMachine):
             self.screen.update_window()
 
             pygame.display.update()
-            self.clock.tick(self.FPS)
+            self.clock.tick(self.state.FPS)
 
             frame += 1
             self.state = self.state.next_state
