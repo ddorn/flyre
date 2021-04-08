@@ -11,11 +11,11 @@ zip: mkdist
 
 linux: mkdist
 	@echo -e "$(GREEN)Building for linux...$(END)"
-	poetry run pyinstaller --noconsole --add-data src/assets:src/assets --onefile yzoc.py
+	PYTHONPATH=src poetry run pyinstaller --noconsole --add-data src/assets/:src/assets --onefile yzoc.py
 
 windows: mkdist
 	@echo -e "$(GREEN)Building for windows...$(END)"
-	WINEDEBUG=-all wine pyinstaller.exe --noconsole --add-data src\assets\;src\assets --onefile yzoc.py
+	WINEDEBUG=-all wine pyinstaller.exe --noconsole --add-data src\\assets\;src\\assets --onefile yzoc.py
 
 run:
 	@poetry run python yzoc.py

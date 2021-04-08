@@ -1,7 +1,6 @@
-from constants import *
-from engine import App, State
-from objects.other import Menu, Text
-from states.my_state import MyState
+from src.engine import *
+from src.objects import Menu, Text
+from .my_state import MyState
 
 
 class GameOverState(MyState):
@@ -15,9 +14,9 @@ class GameOverState(MyState):
             Text(f"Score: {player.score}", YELLOW, 32, midtop=r.rect.midbottom)
         )
 
-        from states import GameState
+        from . import GameState
 
-        from states.menu import MenuState
+        from . import MenuState
 
         self.add(
             Menu(

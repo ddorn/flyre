@@ -1,10 +1,8 @@
-from constants import ORANGE, W
-from engine import App
-from objects.other import Menu, Text
-from objects.player import Player
-from states import GameState
-from states.my_state import MyState
-from states.skillpickup import SkillPickUp
+from src.engine import *
+from src.objects import *
+from .game import GameState
+from .my_state import MyState
+from .skillpickup import SkillPickUp
 
 
 class MenuState(MyState):

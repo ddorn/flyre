@@ -1,20 +1,10 @@
-from random import gauss, random, randrange, uniform
+from random import gauss, random
 
 from pygame import Vector2
 
-from .spaceship import SpaceShip
-from constants import WORLD, YELLOW
-from engine import App, SquareParticle
-from engine.assets import tilemap
-from engine.utils import (
-    angle_towards,
-    clamp_length,
-    from_polar,
-    random_in_rect,
-    random_in_rect_and_avoid,
-)
+from src.engine import *
 from .bullets import Bomb, Bullet, Laser
-
+from .spaceship import SpaceShip
 
 __all__ = ["Enemy", "LaserEnemy", "ChargeEnemy", "CopyEnemy", "BomberEnemy"]
 
@@ -132,7 +122,7 @@ class CopyEnemy(Enemy):
         self.player = player
 
     def fire(self, state, angle):
-        from objects.player import Player
+        from src.objects import Player
 
         for pos in Player.get_guns_positions(self.player):
             crit = random() < self.player.crit_chance

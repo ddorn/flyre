@@ -1,10 +1,10 @@
-from functools import partial
 from random import choice, uniform
-from typing import Callable, Tuple, Type, Union
+from random import choice, uniform
+from typing import Tuple, Type, Union
 
-from constants import WORLD
-from engine.utils import prop_in_rect
-from objects.enemies import *
+
+from src.engine import *
+from src.objects import *
 
 __all__ = ["LEVELS"]
 

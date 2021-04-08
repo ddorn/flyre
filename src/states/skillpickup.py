@@ -1,12 +1,9 @@
-import pygame
 from pygame.locals import *
 
-from constants import H, ORANGE, RED, SCREEN, W, WHITE, YELLOW
-from engine import GFX
-from engine.assets import colored_text, play, text
-from engine.pygame_input import Button, clamp
-from objects.skilltree import Node
-from states.my_state import MyState
+from src.objects import Node
+from src.engine import *
+from src.engine.pygame_input import Button, clamp
+from .my_state import MyState
 
 
 class SkillPickUp(MyState):

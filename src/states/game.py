@@ -1,22 +1,12 @@
-from functools import partial
-from time import time
-
 from pygame import Vector2
-from random import shuffle, uniform
 
-from constants import *
-from engine import GFX, ParticleFountain, SquareParticle
-from engine.assets import font, image, text
-from engine.pygame_input import Axis, Button
-from engine.state_machine import State
-from engine.utils import auto_crop, mix, random_in_rect
-from level import LEVELS
-from objects import Enemy, Planet, Title
-from objects.other import HealthBar
-from objects.player import Player
-from objects.skilltree import build_skill_tree, RegenDebuff
-from states.my_state import MyState
-from states.skillpickup import SkillPickUp
+from src.engine import *
+from pygame import Vector2
+
+from src.level import LEVELS
+from src.objects import *
+from .my_state import MyState
+from .skillpickup import SkillPickUp
 
 
 class GameState(MyState):
@@ -57,7 +47,7 @@ class GameState(MyState):
         return inputs
 
     def set_pause(self, *args):
-        from states.pause import PauseState
+        from . import PauseState
 
         self.push_state(PauseState(self))
 
@@ -72,7 +62,7 @@ class GameState(MyState):
         super().logic()
 
         if not self.player.alive:
-            from states.game_over import GameOverState
+            from . import GameOverState
 
             self.replace_state(GameOverState(self.player))
 
@@ -93,7 +83,7 @@ class GameState(MyState):
 
             self.push_state(SkillPickUp(self.player))
 
-        from states.game_over import GameOverState
+        from . import GameOverState
 
         self.replace_state(GameOverState(self.player))
 

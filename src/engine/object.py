@@ -3,7 +3,7 @@ from typing import Optional, TYPE_CHECKING
 
 import pygame
 
-from constants import GREEN, RED
+from .constants import GREEN, RED
 from . import App, GFX
 from .particles import ImageParticle
 from .assets import font, rotate
@@ -223,7 +223,7 @@ class Entity(SpriteObject):
 
         surf = font(20).render(str(int(amount)), False, RED)
 
-        from engine import ImageParticle
+        from src.engine import ImageParticle
 
         pos = random_in_rect(self.rect)
         App.current_state().particles.add(

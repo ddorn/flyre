@@ -1,8 +1,7 @@
 from contextlib import contextmanager
 from functools import lru_cache
-from math import cos, exp, sin
-from random import random, randrange, uniform
-from time import time
+from math import exp
+from random import randrange, uniform
 from typing import Tuple
 
 import pygame

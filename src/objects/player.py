@@ -1,18 +1,16 @@
 from functools import partial
 from random import gauss, random
 
-import pygame
 from pygame import Vector2
 
-from constants import WORLD, YELLOW
-from engine import App, Entity, ImageParticle, SquareParticle
-from engine.assets import font, tilemap
-from engine.pygame_input import Axis
-from engine.utils import clamp, clamp_length, from_polar
-from objects import Bullet, CopyEnemy, SpaceShip
-from objects.bullets import DebuffBullet
-from objects.other import HealthBar
-from objects.skilltree import build_skill_tree, FireDebuff, RegenDebuff
+from src.engine import *
+from . import Bullet, CopyEnemy, SpaceShip
+from .bullets import DebuffBullet
+from .other import HealthBar
+from .skilltree import build_skill_tree, FireDebuff
+
+
+__all__ = ["Player"]
 
 
 class Player(SpaceShip):

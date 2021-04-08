@@ -1,24 +1,10 @@
 from random import gauss, random, uniform
 
-import pygame
-
-from constants import WORLD, YELLOW
-from engine import App, LineParticle, SquareParticle, State
-from engine.assets import play
-from engine.object import Entity
-from engine.utils import (
-    chrange,
-    clamp_length,
-    from_polar,
-    part_perp_to,
-    random_in_rect,
-    random_in_rect_and_avoid,
-    random_in_surface,
-)
+from src.engine import *
 
 __all__ = ["SpaceShip"]
 
-from objects.bullets import Bomb
+from .bullets import Bomb
 
 
 class Cooldown:

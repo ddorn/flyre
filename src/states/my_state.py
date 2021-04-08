@@ -2,9 +2,8 @@ from random import shuffle
 
 import pygame
 
-from constants import SCREEN
-from engine import ParticleFountain, State
-from objects import Planet
+from src.engine import *
+from src.objects import Planet
 
 
 class MyState(State):

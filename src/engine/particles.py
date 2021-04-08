@@ -21,7 +21,7 @@ __all__ = [
     "ShardParticle",
 ]
 
-from engine.utils import bounce, exp_impulse, random_in_rect
+from src.engine.utils import bounce, exp_impulse, random_in_rect
 
 pygame.init()
 

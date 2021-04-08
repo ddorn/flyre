@@ -1,10 +1,9 @@
+import os
 from glob import glob
 from time import time
 
-from constants import *
-from engine import GFX, State
-from engine.assets import image, text
-from states.menu import MenuState
+from src.engine import *
+from .menu import MenuState
 
 
 class LoadingState(State):
@@ -12,7 +11,7 @@ class LoadingState(State):
 
     def __init__(self):
         super().__init__()
-        self.images = glob(f"{IMAGES}/*.png")
+        self.images = list(IMAGES.glob("*.png"))
         self.progress = 0
         self.debug.enabled = True
 

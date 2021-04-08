@@ -5,11 +5,11 @@ from typing import List, Optional, Tuple, Type, TypeVar, Union
 import pygame
 from pygame.locals import *
 
-from constants import MUSIC
-from engine.assets import play
-from engine.particles import ParticleSystem
-from engine.pygame_input import Button, Inputs, QuitEvent
-from engine.utils import mix
+from .constants import MUSIC
+from .assets import play
+from .particles import ParticleSystem
+from .pygame_input import Button, Inputs, QuitEvent
+from .utils import mix
 
 T = TypeVar("T")
 
@@ -39,7 +39,7 @@ class State:
         self.shake = 0
 
         self.particles = ParticleSystem()
-        from objects import Debug
+        from src.objects import Debug
 
         self.debug = self.add(Debug())
 

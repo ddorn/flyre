@@ -1,10 +1,8 @@
 from pygame import K_p
 
-from constants import H, SCREEN, W, YELLOW
-from engine import App, GFX, State
-from engine.assets import text
-from engine.pygame_input import Button
-from objects.other import Menu
+from src.engine import *
+from src.engine.pygame_input import Button
+from src.objects import Menu
 
 
 class PauseState(State):

@@ -2,16 +2,12 @@ from random import gauss, random, uniform
 
 from pygame import Vector2
 
-from constants import *
-from engine import ImageParticle, LineParticle, ShardParticle, SquareParticle
-from engine.assets import Animation, font, play, tilemap
-from engine.object import Object, SpriteObject
-from engine.utils import auto_crop, bounce, from_polar, vec2int
+from src.engine import *
 
 __all__ = ["Bullet", "Laser", "DebuffBullet"]
 
 
-from objects.skilltree import Debuff
+from .skilltree import Debuff
 
 
 class BaseBullet:

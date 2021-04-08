@@ -1,13 +1,9 @@
 from contextlib import contextmanager
-from functools import lru_cache
 
 import pygame
 import pygame.gfxdraw
 
-
 __all__ = ["GFX"]
-
-from .utils import vec2int
 
 
 class GFX:

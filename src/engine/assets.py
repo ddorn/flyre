@@ -3,8 +3,8 @@ from functools import lru_cache
 
 import pygame
 
-from constants import *
-from engine.utils import overlay
+from .constants import *
+from .utils import overlay
 
 VOLUMES = {"shoot": 0.4, "denied": 0.8, "hit": 0.7}
 
