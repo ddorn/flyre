@@ -39,6 +39,7 @@ class Settings:
         self.highscores = []
         self.name = "Cool kid"
         self.last_score = None
+        self.mute = False
 
     def load(self):
         """(re)load the settings from the file. Called automatically on the first instance of Settings."""

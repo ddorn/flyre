@@ -1,9 +1,8 @@
 import json
 from functools import lru_cache
 
-import pygame
-
 from .constants import *
+from .settings import settings
 from .utils import overlay
 
 VOLUMES = {"shoot": 0.4, "denied": 0.8, "hit": 0.7}
@@ -20,9 +19,10 @@ def sound(name):
 
 
 def play(name: str):
-    s = sound(name)
-    s.stop()
-    s.play()
+    if not settings.mute:
+        s = sound(name)
+        s.stop()
+        s.play()
 
 
 @lru_cache()

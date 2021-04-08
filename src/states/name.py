@@ -21,7 +21,7 @@ class NameInputState(MyState):
     def create_inputs(self):
         inputs = super().create_inputs()
 
-        valid = string.ascii_letters + string.digits + string.punctuation
+        valid = string.ascii_letters + string.digits + string.punctuation + " "
 
         class Mock:
             def update(self, dt):

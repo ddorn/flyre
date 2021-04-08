@@ -47,13 +47,13 @@ class GameState(MyState):
         inputs["pause"] = Button(pygame.K_p, JoyButton(JOY_Y), JoyButton(JOY_X))
         inputs["pause"].on_press(self.set_pause)
 
-        def cheat(_):
-            self.lvl.skip = True
-            for en in self.get_all(Enemy):
-                en.alive = False
-
-        inputs["cheat"] = Button(pygame.K_c)
-        inputs["cheat"].on_press(cheat)
+        # def cheat(_):
+        #     self.lvl.skip = True
+        #     for en in self.get_all(Enemy):
+        #         en.alive = False
+        #
+        # inputs["cheat"] = Button(pygame.K_c)
+        # inputs["cheat"].on_press(cheat)
 
         return inputs
 
@@ -196,5 +196,7 @@ class GameState(MyState):
                 "The most used font is called Wellbutrin.",
                 "The cool looking bomb explosion was made by Will Tice. Check him out on itch.io!",
                 "The game name, 'Flyre' was found one hour before the deadline.",
+                "Press M to mute all sounds.",
+                "Check out my other creations at https://therandom.space/showcase !",
             ]
         )

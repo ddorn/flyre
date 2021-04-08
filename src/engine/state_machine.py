@@ -2,12 +2,14 @@ from enum import Enum
 from random import randint
 from typing import List, Optional, Tuple, Type, TypeVar, Union
 
+import pygame
 from pygame.locals import *
 
 from .assets import play
 from .constants import *
 from .particles import ParticleSystem
 from .pygame_input import Button, Inputs, JoyButton, QuitEvent
+from .settings import settings
 from .utils import mix
 
 T = TypeVar("T")
@@ -62,6 +64,9 @@ class State:
         inputs["debug"] = Button(K_F11, JoyButton(10))
         inputs["debug"].on_press(self.debug.toggle)
 
+        inputs["mute"] = Button(K_m, JoyButton(11))
+        inputs["mute"].on_press(self.toggle_mute)
+
         for object in self.objects:
             obj_inputs = object.create_inputs()
             if not set(inputs).isdisjoint(obj_inputs):
@@ -71,12 +76,19 @@ class State:
 
         return inputs
 
+    def toggle_mute(self, *_):
+        settings.mute = not settings.mute
+        if settings.mute:
+            pygame.mixer.music.set_volume(0)
+        else:
+            pygame.mixer.music.set_volume(1)
+
     # Life phase of state
 
     def on_resume(self):
         self.inputs = self.create_inputs()
         self.next_state = (StateOperations.NOP, None)
-        if self.BG_MUSIC:
+        if self.BG_MUSIC and not settings.mute:
             pygame.mixer.music.load(MUSIC / self.BG_MUSIC)
             # pygame.mixer.music.set_volume(VOLUME['BG_MUSIC'] * Settings().music)
             pygame.mixer.music.play(-1)

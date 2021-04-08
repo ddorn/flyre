@@ -261,7 +261,7 @@ class Bomb(Object, BaseBullet):
                         chrange(self.duration - self.timer, (0, self.duration), (0, pi))
                     )
                 )
-                * 40
+                * 60
             )
             pygame.gfxdraw.filled_circle(
                 gfx.surf, *vec2int(self.center), self.RADIUS, RED + (int(alpha),)

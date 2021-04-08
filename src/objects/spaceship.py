@@ -305,7 +305,7 @@ class SpaceShip(Entity):
             if duration % 20 == 0:
                 play("hit")
                 self.damage(
-                    ship.CONTACT_DAMAGE * ship.CONCTACT_RESISTANCE,
+                    ship.CONTACT_DAMAGE * self.CONCTACT_RESISTANCE,
                     ignore_invincibility=True,
                 )
 

@@ -91,6 +91,8 @@ class App(StateMachine):
         while self.stack:
             self.state = (StateOperations.POP, None)
 
+        settings.save()
+
         sys.exit()
 
 

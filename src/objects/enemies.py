@@ -56,6 +56,7 @@ class LaserEnemy(Enemy):
     GUN = (15.5, 7)
     SIZE = Vector2(22, 16) * Enemy.SCALE
     OFFSET = (-6, -11)
+    KNOCK_BACK = 1.5
 
     def __init__(self, pos):
         super().__init__(pos, 2)
@@ -84,6 +85,7 @@ class ChargeEnemy(Enemy):
     OFFSET = (-6, -8)
     GUN = (16.5, 13)
     CONTACT_DAMAGE = 400
+    SCORE = 150
 
     INITIAL_LIFE = 750
 
@@ -200,7 +202,7 @@ class Boss(Enemy):
     SIZE = Vector2(27, 31) * Enemy.SCALE
     GUN = (16, 4)
     SIDE_GUNS = ((5, 2), (26, 2))
-    KNOCK_BACK = 0
+    KNOCK_BACK = 0.1
 
     SCORE = 2000
 
