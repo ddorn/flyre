@@ -254,3 +254,16 @@ def random_in_rect_and_avoid(
             return pos
 
     return default
+
+
+def random_rainbow_color(saturation=100, value=100):
+    """Get a random color from the rainbow.
+
+    Args:
+        saturation: integer between 0 and 100
+        value: integer between 0 and 100
+    """
+    hue = randrange(0, 360)
+    color = pygame.Color(0)
+    color.hsva = hue, saturation, value, 100
+    return color

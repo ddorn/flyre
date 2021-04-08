@@ -204,9 +204,15 @@ class State:
         """Replace the current state with an other one. Equivalent of a theoric pop then push."""
         self.next_state = (StateOperations.REPLACE, new)
 
-    def push_state_callback(self, other_state: Type["State"], *args):
+    def push_state_callback(self, new: Type["State"], *args):
         def callback(*_):
-            self.next_state = (StateOperations.PUSH, other_state(*args))
+            self.next_state = (StateOperations.PUSH, new(*args))
+
+        return callback
+
+    def replace_state_callback(self, new: Type["State"], *args):
+        def callback(*_):
+            self.next_state = (StateOperations.REPLACE, new(*args))
 
         return callback
 

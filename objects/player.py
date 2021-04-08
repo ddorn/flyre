@@ -50,8 +50,7 @@ class Player(SpaceShip):
     def move_vertically(self, axis: Axis):
         self.vel.y += axis.value * self.MAX_THRUST * 2
 
-    def fire(self, state):
-
+    def get_guns_positions(self):
         guns = []
         if self.nb_bullets % 2 == 1:
             guns.append(self.GUN)
@@ -60,7 +59,13 @@ class Player(SpaceShip):
         if self.nb_bullets > 3:
             guns.extend([self.GUN_FAR_LEFT, self.GUN_FAR_RIGHT])
 
-        for pos in guns:
+        if self.nb_bullets > 5:
+            ...
+
+        return guns
+
+    def fire(self, state):
+        for pos in self.get_guns_positions():
             if random() < self.fire_chance:
                 bullet = partial(
                     DebuffBullet,

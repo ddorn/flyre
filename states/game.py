@@ -68,6 +68,14 @@ class GameState(MyState):
     def on_exit(self):
         self.debug.paused = True
 
+    def logic(self):
+        super().logic()
+
+        if not self.player.alive:
+            from states.game_over import GameOverState
+
+            self.replace_state(GameOverState(self.player))
+
     def script(self):
         for i, level in enumerate(LEVELS):
             # Draw level name
@@ -84,6 +92,10 @@ class GameState(MyState):
             ).wait_until_dead()
 
             self.push_state(SkillPickUp(self.player))
+
+        from states.game_over import GameOverState
+
+        self.replace_state(GameOverState(self.player))
 
     def draw(self, gfx: "GFX"):
         super().draw(gfx)

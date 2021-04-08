@@ -40,6 +40,7 @@ class SpaceShip(Entity):
     MAX_THRUST = 0.2
     KNOCK_BACK = 2
     CONTACT_DAMAGE = 100
+    INITIAL_BULLET_DAMAGE = 100
 
     def __init__(
         self,
@@ -54,8 +55,8 @@ class SpaceShip(Entity):
 
         self.max_speed = 3
         self.bullet_speed = 10
-        self.bullet_damage = 100
-        self.crit_chance = 0.1
+        self.bullet_damage = self.INITIAL_BULLET_DAMAGE
+        self.crit_chance = 0.01
         self.crit_mult = 3
         self.fire_chance = 0.02
         self.fire_dmg = 0.1
@@ -323,6 +324,7 @@ class SpaceShip(Entity):
 
     def hit(self, bullet):
         if not self.invincible:
+            self.state.debug.text("Hit: ", bullet, bullet.damage, self)
             self.damage(bullet.damage)
             self.vel += from_polar(self.KNOCK_BACK, bullet.angle)
             if bullet.crit:

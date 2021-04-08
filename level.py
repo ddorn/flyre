@@ -74,6 +74,15 @@ class Level:
         yield
 
 
+class Level0(Level):
+    """For demo purposes."""
+
+    def script(self):
+        for e in self.all_enemy_types():
+            self.spawn(e, 0)
+            yield from self.wait_until_dead()
+
+
 class Level1(Level):
     """First level, "tutorial"."""
 
@@ -125,8 +134,8 @@ class Level3(Level):
             if i in (5, 9):
                 self.spawn(BomberEnemy)
 
-            yield from self.wait(2)
-        yield from self.wait(8)
+            yield from self.wait(3)
+        yield from self.wait(11)
 
         self.spawn(Enemy, -1)
         self.spawn(Enemy, 1)

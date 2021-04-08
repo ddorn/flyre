@@ -1,9 +1,10 @@
 from constants import *
-from engine import State
+from engine import App, State
 from objects.other import Menu, Text
+from states.my_state import MyState
 
 
-class GameOverState(State):
+class GameOverState(MyState):
     def __init__(self, player):
         super().__init__()
 
@@ -14,4 +15,17 @@ class GameOverState(State):
             Text(f"Score: {player.score}", YELLOW, 32, midtop=r.rect.midbottom)
         )
 
-        self.add(Menu(r.rect.midbottom, {"Restart"}))
+        from states import GameState
+
+        from states.menu import MenuState
+
+        self.add(
+            Menu(
+                (W / 2, H - 150),
+                {
+                    "Restart": self.replace_state_callback(GameState),
+                    "Menu": self.replace_state_callback(MenuState),
+                    "Quit": App.MAIN_APP.quit,
+                },
+            )
+        )

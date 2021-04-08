@@ -24,14 +24,13 @@ class Planet(Object):
     Z = -1
     TOTAL_PLANETS = len(glob(str(ANIMATIONS) + "/planet*.json"))
 
-    def __init__(self, number, pos, speed, wrap_rect):
+    def __init__(self, number, center, speed, wrap_rect):
         self.number = number
         self.animation = Animation(f"planet{number}", speed)
         self.wrap_rect = wrap_rect
 
-        super().__init__(
-            pos, (self.animation.tile_size, self.animation.tile_size), vel=(0, 0.5)
-        )
+        s = self.animation.tile_size
+        super().__init__(center - Vector2(s, s) / 2, (s, s), vel=(0, 0.5))
 
     @classmethod
     def random_planet(cls, number, avoid_positions, wrap_rect, y=None, max_trials=1000):
@@ -71,7 +70,7 @@ class Planet(Object):
 
     def draw(self, gfx):
         frame = self.animation.image()
-        gfx.blit(frame, center=self.pos)
+        gfx.blit(frame, topleft=self.pos)
 
 
 class Debug(Object):
@@ -83,6 +82,7 @@ class Debug(Object):
         self.vectors = []
         self.rects = []
         self.texts = []
+        self.nb_txt_this_frame = 0
 
         self.lasts = [[], [], [], []]
 
@@ -107,9 +107,10 @@ class Debug(Object):
             self.rects.append((rect, color))
         return rect
 
-    def text(self, obj):
+    def text(self, *obj):
         if self.enabled:
             self.texts.append(obj)
+            self.nb_txt_this_frame += 1
 
     def draw(self, gfx):
         if self.paused:
@@ -125,8 +126,11 @@ class Debug(Object):
             pygame.draw.rect(gfx.surf, color, rect, 1)
 
         y = 3
-        for obj in self.texts:
-            s = text(str(obj), 7, WHITE, "pixelmillennium")
+        for i, obj in enumerate(self.texts):
+            color = (
+                WHITE if len(self.texts) - i - 1 >= self.nb_txt_this_frame else YELLOW
+            )
+            s = text(" ".join(map(str, obj)), 7, color, "pixelmillennium")
             r = gfx.blit(s, topleft=(3, y))
             y = r.bottom
 
@@ -134,7 +138,9 @@ class Debug(Object):
         self.points = []
         self.vectors = []
         self.rects = []
-        self.texts = []
+        self.texts = self.texts[-5:]
+        if not self.paused:
+            self.nb_txt_this_frame = 0
 
 
 class Title(Object):

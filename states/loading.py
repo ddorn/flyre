@@ -1,15 +1,14 @@
-from time import time
 from glob import glob
-from pathlib import Path
+from time import time
 
 from constants import *
 from engine import GFX, State
-from engine.assets import sound, image, text
+from engine.assets import image, text
 from states.menu import MenuState
 
 
 class LoadingState(State):
-    FPS = 1000
+    FPS = 500
 
     def __init__(self):
         super().__init__()
@@ -29,7 +28,7 @@ class LoadingState(State):
         print(f"Loading done in {round(end - start, 2)}s!")
 
         # So they can the the 100% load
-        for _ in range(200):
+        for _ in range(100):
             yield
         self.replace_state(MenuState())
 

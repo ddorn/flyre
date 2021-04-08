@@ -1,4 +1,5 @@
 from functools import lru_cache
+from typing import Optional, TYPE_CHECKING
 
 import pygame
 
@@ -8,9 +9,12 @@ from .particles import ImageParticle
 from .assets import font, rotate
 from .settings import settings
 
+if TYPE_CHECKING:
+    from . import State
+
 __all__ = ["Object", "Entity", "SpriteObject"]
 
-from .utils import overlay, random_in_rect
+from .utils import overlay, random_in_rect, random_rainbow_color
 
 
 class Object:
@@ -22,7 +26,10 @@ class Object:
         self.vel = pygame.Vector2(vel)
         self.alive = True
         self.scripts = {self.script()}
-        self.state = None
+        self.state: Optional["State"] = None
+
+        # A somewhat unique color per object, that can be used for debugging
+        self._random_color = random_rainbow_color(80)
 
     def __str__(self):
         return f"{self.__class__.__name__}(at {self.pos})"
@@ -63,8 +70,11 @@ class Object:
                 to_remove.add(script)
         self.scripts.difference_update(to_remove)
 
+        self.state.debug.rectangle(self.rect, self._random_color)
+        self.state.debug.vector(self.vel * 10, self.center, self._random_color)
+
     def draw(self, gfx: "GFX"):
-        self.state.debug.rectangle(self.rect)
+        pass
 
     def on_death(self, state):
         """Overwrite this to have a logic when the object dies.

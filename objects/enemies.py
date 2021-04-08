@@ -61,7 +61,7 @@ class Enemy(SpaceShip):
 
 
 class LaserEnemy(Enemy):
-    GUN = (16.5, 7)
+    GUN = (15.5, 7)
     SIZE = Vector2(22, 16) * Enemy.SCALE
     OFFSET = (-6, -11)
 
@@ -80,7 +80,11 @@ class LaserEnemy(Enemy):
             yield from self.slow_down_and_stop()
 
             bullet = self.fire(state, self.state.player)
-            bullet.wait_until_dead()
+            while bullet.alive:
+                yield from self.slow_down_and_stop()
+                # slow_down_and_stop is an empty generator,
+                # if we are already stopped. It would result in an empty loop
+                yield
 
 
 class ChargeEnemy(Enemy):
@@ -120,11 +124,6 @@ class CopyEnemy(Enemy):
     OFFSET = Vector2(-7, -11)
     JET1 = Vector2(14, 22)
     JET2 = Vector2(16, 22)
-    GUN = Vector2(15, 5)
-    GUN_LEFT = Vector2(11, 11)
-    GUN_RIGHT = Vector2(19, 11)
-    GUN_FAR_LEFT = Vector2(8, 14)
-    GUN_FAR_RIGHT = Vector2(22, 14)
 
     def __init__(self, pos, player):
         self.INITIAL_LIFE = player.max_life
@@ -133,16 +132,9 @@ class CopyEnemy(Enemy):
         self.player = player
 
     def fire(self, state, angle):
-        # Copied from player
-        guns = []
-        if self.nb_bullets % 2 == 1:
-            guns.append(self.GUN)
-        if self.nb_bullets > 1:
-            guns.extend([self.GUN_LEFT, self.GUN_RIGHT])
-        if self.nb_bullets > 3:
-            guns.extend([self.GUN_FAR_LEFT, self.GUN_FAR_RIGHT])
+        from objects.player import Player
 
-        for pos in guns:
+        for pos in Player.get_guns_positions(self.player):
             crit = random() < self.player.crit_chance
             state.add(
                 Bullet(
@@ -184,21 +176,16 @@ class BomberEnemy(Enemy):
     OFFSET = (-5, -5)
 
     INITIAL_LIFE = 2000
+    INITIAL_BULLET_DAMAGE = 250
 
     def __init__(self, pos):
         super().__init__(pos, 4)
 
     def fire(self, state, direction=None):
-        state.add(Bomb(self.center, self, self.bullet_damage))
+        state.add(Bomb(self.center, self, state.player.center, self.bullet_damage))
 
     def script(self):
         while True:
-
-            pos = random_in_rect_and_avoid(
-                WORLD.inflate(-60, -60),
-                [o.center for o in self.state.get_all(SpaceShip, Bomb)],
-                80,
-            )
-            yield from self.go_straight_to(pos)
+            yield from self.go_straight_to()
             yield from self.slow_down_and_stop()
             self.fire(self.state)

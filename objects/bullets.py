@@ -1,8 +1,9 @@
-from math import exp
 from random import gauss, random, uniform
 
+from pygame import Vector2
+
 from constants import *
-from engine import ImageParticle, LineParticle, SquareParticle
+from engine import ImageParticle, LineParticle, ShardParticle, SquareParticle
 from engine.assets import Animation, font, play, tilemap
 from engine.object import Object, SpriteObject
 from engine.utils import auto_crop, bounce, from_polar, vec2int
@@ -14,8 +15,6 @@ from objects.skilltree import Debuff
 
 
 class BaseBullet:
-    Z = 1
-
     def __init__(self, owner, damage=100, speed=5, angle=0.0, crit=False):
         self.owner = owner
         self.damage = damage
@@ -38,6 +37,7 @@ class BaseBullet:
 
 
 class Bullet(SpriteObject, BaseBullet):
+    Z = 1
     SPEED = 5
     SIZE = (1, 1)
     INITIAL_ROTATION = 90
@@ -100,6 +100,18 @@ class Bullet(SpriteObject, BaseBullet):
                     .build()
                 )
 
+                tot = 5
+                for i in range(tot):
+                    state.particles.add(
+                        ShardParticle(YELLOW)
+                        .builder()
+                        .at(self.pos, 360 * i / (tot - 1))
+                        .velocity(10)
+                        .sized(4)
+                        .anim_fade()
+                        .build()
+                    )
+
             return True
         return False
 
@@ -119,6 +131,8 @@ class DebuffBullet(Bullet):
 
 
 class Laser(Object, BaseBullet):
+    Z = 1
+
     def __init__(
         self,
         owner,
@@ -193,14 +207,18 @@ class Laser(Object, BaseBullet):
 
 
 class Bomb(Object, BaseBullet):
+    Z = 1
     SIZE = (9, 9)
+    SPEED = 3
 
-    def __init__(self, center, owner, damage=200, timer=3 * 60):
+    def __init__(self, center, owner, target: Vector2, damage=200, timer=1 * 60):
 
-        Object.__init__(self, center, self.SIZE)
+        vel = (target - center).normalize() * self.SPEED
+        Object.__init__(self, center, self.SIZE, vel)
         self.center = center
+        self.target = Vector2(target)
 
-        BaseBullet.__init__(self, owner, damage, 0)
+        BaseBullet.__init__(self, owner, damage, self.SPEED, vel.as_polar()[1])
         self.animation = Animation(f"bomb")
         self.timer = timer
 
@@ -210,12 +228,16 @@ class Bomb(Object, BaseBullet):
         super().logic(state)
         self.animation.logic()
 
-        self.timer -= 1
+        if self.center.distance_to(self.target) < 2 * self.SPEED:
+            self.timer -= 1
+            self.vel *= 0
 
         if self.timer == 0:
             self.animation = Animation("explosion")
+            play("explosion")
             for ship in state.get_all(SpaceShip):
                 if ship.center.distance_to(self.center) < 20 + ship.size.length() / 2:
+                    self.angle = (ship.center - self.center).as_polar()[1]
                     ship.hit(self)
 
         if self.timer == -len(self.animation):
