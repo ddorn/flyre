@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 
 
-__all__ = ["Settings", 'settings']
+__all__ = ["Settings", "settings"]
 
 
 class Settings:
@@ -13,7 +13,7 @@ class Settings:
     """
 
     _instance = None
-    PATH = Path(__file__).parent / 'settings.json'
+    PATH = Path(__file__).parent / "settings.json"
 
     def __new__(cls):
         if cls._instance:
@@ -51,4 +51,3 @@ class Settings:
 
 
 settings = Settings()
-
