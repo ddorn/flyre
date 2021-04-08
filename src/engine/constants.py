@@ -30,3 +30,19 @@ UPWARDS = -90  # degrees
 DOWNWARDS = 90  # degrees
 
 DEBUG = False
+
+
+# Joystick buttons id on my joystick (xbox)
+JOY_A = 0
+JOY_B = 1
+JOY_X = 2
+JOY_Y = 3
+JOY_BACK = 6
+JOY_START = 7
+# Joystick axis id on my joystick (xbox)
+JOY_HORIZ_LEFT = 0
+JOY_HORIZ_RIGHT = 3
+JOY_VERT_LEFT = 1
+JOY_VERT_RIGHT = 4
+JOY_RL = 2
+JOY_RT = 5

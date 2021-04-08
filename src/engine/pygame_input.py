@@ -104,7 +104,7 @@ class JoyAxisTrigger(ButtonInput):
     """
 
     axis: int
-    threshold: int = 0.5
+    threshold: float = 0.5
     above: bool = True
     """Whether the button is pressed when the value is above or below the threshold"""
     joy_id: int = 0

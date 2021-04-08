@@ -233,13 +233,29 @@ class Menu(Object):
         self.selected = 0
 
     def create_inputs(self):
-        up = Button(K_UP, K_w)
+        up = Button(
+            K_UP,
+            K_w,
+            JoyAxisTrigger(JOY_VERT_RIGHT, -0.5, False),
+            JoyAxisTrigger(JOY_VERT_LEFT, -0.5, False),
+        )
         up.on_press(lambda _: self.change_selection(-1))
 
-        down = Button(K_DOWN, K_s)
+        down = Button(
+            K_DOWN, K_s, JoyAxisTrigger(JOY_VERT_RIGHT), JoyAxisTrigger(JOY_VERT_LEFT)
+        )
         down.on_press(lambda _: self.change_selection(+1))
 
-        select = Button(K_SPACE, K_RETURN, K_RIGHT, K_d)
+        select = Button(
+            K_SPACE,
+            K_RETURN,
+            K_RIGHT,
+            K_d,
+            JoyButton(JOY_A),
+            JoyButton(JOY_START),
+            JoyAxisTrigger(JOY_RT, 0),
+            JoyAxisTrigger(JOY_RL, 0),
+        )
         select.on_press(self.select)
 
         return {up: up, down: down, select: select}

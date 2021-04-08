@@ -18,19 +18,38 @@ class SkillPickUp(MyState):
 
     def create_inputs(self):
         inputs = super().create_inputs()
-        inputs["left"] = Button(K_LEFT, K_d)
+        inputs["left"] = Button(
+            K_LEFT,
+            K_d,
+            JoyAxisTrigger(JOY_HORIZ_LEFT, -0.5, False),
+            JoyAxisTrigger(JOY_HORIZ_RIGHT, -0.5, False),
+        )
         inputs["left"].on_press(lambda _: self.go_to_sibling(-1))
 
-        inputs["right"] = Button(K_RIGHT, K_a)
+        inputs["right"] = Button(
+            K_RIGHT,
+            K_a,
+            JoyAxisTrigger(JOY_HORIZ_LEFT),
+            JoyAxisTrigger(JOY_HORIZ_RIGHT),
+        )
         inputs["right"].on_press(lambda _: self.go_to_sibling(+1))
 
-        inputs["down"] = Button(K_DOWN, K_s)
+        inputs["down"] = Button(
+            K_DOWN, K_s, JoyAxisTrigger(JOY_VERT_LEFT), JoyAxisTrigger(JOY_VERT_RIGHT)
+        )
         inputs["down"].on_press(self.go_child)
 
-        inputs["up"] = Button(K_UP, K_w)
+        inputs["up"] = Button(
+            K_UP,
+            K_w,
+            JoyAxisTrigger(JOY_VERT_LEFT, -0.5, False),
+            JoyAxisTrigger(JOY_VERT_RIGHT, -0.5, False),
+        )
         inputs["up"].on_press(self.go_parent)
 
-        inputs["select"] = Button(K_SPACE, K_RETURN)
+        inputs["select"] = Button(
+            K_SPACE, K_RETURN, JoyButton(JOY_A), JoyButton(JOY_START)
+        )
         inputs["select"].on_press(self.select)
 
         return inputs

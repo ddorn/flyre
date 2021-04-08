@@ -2,13 +2,12 @@ from enum import Enum
 from random import randint
 from typing import List, Optional, Tuple, Type, TypeVar, Union
 
-import pygame
 from pygame.locals import *
 
-from .constants import MUSIC
 from .assets import play
+from .constants import *
 from .particles import ParticleSystem
-from .pygame_input import Button, Inputs, QuitEvent
+from .pygame_input import Button, Inputs, JoyButton, QuitEvent
 from .utils import mix
 
 T = TypeVar("T")
@@ -48,11 +47,19 @@ class State:
         self.running_script = self.script()
 
     def create_inputs(self):
+        pygame.joystick.init()
+        nb = pygame.joystick.get_count()
+        self.debug.text("Joysticks:", nb)
+        if nb > 0:
+            joy = pygame.joystick.Joystick(0)
+            joy.init()
+            self.joy = joy
+
         inputs = Inputs()
-        inputs["quit"] = Button(QuitEvent(), K_ESCAPE, K_q)
+        inputs["quit"] = Button(QuitEvent(), K_ESCAPE, K_q, JoyButton(JOY_BACK))
         inputs["quit"].on_press(self.pop_state)
 
-        inputs["debug"] = Button(K_F11)
+        inputs["debug"] = Button(K_F11, JoyButton(10))
         inputs["debug"].on_press(self.debug.toggle)
 
         for object in self.objects:

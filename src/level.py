@@ -38,12 +38,12 @@ class Level:
 
     def all_enemy_types(self):
         return [
-            Boss,
             Enemy,
             LaserEnemy,
             BomberEnemy,
             ChargeEnemy,
             lambda *args: CopyEnemy(*args, player=self.state.player),
+            Boss,
         ]
 
     def random_enemy(self) -> Enemy:

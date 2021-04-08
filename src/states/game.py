@@ -21,19 +21,25 @@ class GameState(MyState):
     def create_inputs(self):
         inputs = super().create_inputs()
         inputs["horizontal"] = Axis(
-            [pygame.K_a, pygame.K_LEFT], [pygame.K_d, pygame.K_RIGHT]
+            [pygame.K_a, pygame.K_LEFT],
+            [pygame.K_d, pygame.K_RIGHT],
+            JoyAxis(JOY_HORIZ_LEFT),
         )
         inputs["horizontal"].always_call(self.player.move_horizontally)
 
         inputs["vertical"] = Axis(
-            [pygame.K_w, pygame.K_UP], [pygame.K_s, pygame.K_DOWN]
+            [pygame.K_w, pygame.K_UP],
+            [pygame.K_s, pygame.K_DOWN],
+            JoyAxis(JOY_VERT_LEFT),
         )
         inputs["vertical"].always_call(self.player.move_vertically)
 
-        inputs["fire"] = Button(pygame.K_SPACE)
+        inputs["fire"] = Button(
+            pygame.K_SPACE, JoyAxisTrigger(JOY_RT), JoyAxisTrigger(JOY_RL)
+        )
         inputs["fire"].on_press_repeated(lambda _: self.player.fire(self), 0.1)
 
-        inputs["pause"] = Button(pygame.K_p)
+        inputs["pause"] = Button(pygame.K_p, JoyButton(JOY_Y))
         inputs["pause"].on_press(self.set_pause)
 
         def cheat(_):
