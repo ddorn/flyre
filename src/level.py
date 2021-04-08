@@ -38,6 +38,7 @@ class Level:
 
     def all_enemy_types(self):
         return [
+            Boss,
             Enemy,
             LaserEnemy,
             BomberEnemy,

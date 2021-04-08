@@ -178,11 +178,10 @@ class Entity(SpriteObject):
         size=(1, 1),
         vel=(0, 0),
         rotation=0,
-        max_life=1000,
     ):
         super().__init__(pos, image, offset, size, vel, rotation)
         self.max_life = self.INITIAL_LIFE
-        self.life = max_life
+        self.life = self.INITIAL_LIFE
         self.last_hit = 100000000
 
     def heal(self, amount):

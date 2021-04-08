@@ -127,10 +127,9 @@ class Player(SpaceShip):
         self.health_bar.draw(gfx)
 
     def did_kill(self, enemy):
-        bonus = 100
-        self.score += bonus
+        self.score += enemy.SCORE
 
-        surf = font(20).render(str(bonus), False, YELLOW)
+        surf = font(20).render(str(enemy.SCORE), False, YELLOW)
         App.current_state().particles.add(
             ImageParticle(surf)
             .builder()

@@ -308,6 +308,7 @@ class HealthBar(Object):
 
         if self.flash_duration <= 0:
             self.flash_size -= 1
+            self.flash_size *= 0.98
             self.flash_size = max(0, self.flash_size - 3)
 
         self.last_health = self.entity.life

@@ -38,10 +38,10 @@ class Bullet(SpriteObject, BaseBullet):
     SIZE = (1, 1)
     INITIAL_ROTATION = 90
 
-    def __init__(self, pos, direction, owner, damage=100, speed=5, crit=False):
+    def __init__(self, pos, direction, owner, damage=100, speed=5, crit=False, kind=0):
         play("shoot")
 
-        img = auto_crop(tilemap("sprites", 0, 0, 16))
+        img = auto_crop(tilemap("sprites", kind, 0, 16))
 
         vel = pygame.Vector2(direction)
         vel.scale_to_length(speed)
@@ -58,7 +58,7 @@ class Bullet(SpriteObject, BaseBullet):
         SpriteObject.logic(self, state)
         BaseBullet.logic(self, state)
 
-        screen = WORLD.inflate(32, 32)
+        screen = WORLD.inflate(1000, 1000)
         if not screen.collidepoint(*self.pos):
             self.alive = False
 
@@ -137,11 +137,13 @@ class Laser(Object, BaseBullet):
         preshoot_duration=40,
         laser_duration=20,
         damage=100,
+        offset_angle=0,
     ):
         Object.__init__(self, owner.sprite_to_screen(owner.GUN))
-        BaseBullet.__init__(self, owner, damage, angle=owner.angle)
+        BaseBullet.__init__(self, owner, damage, angle=owner.angle + offset_angle)
         self.target = target
 
+        self.offset_angle = offset_angle
         self.timer = 0
         self.follow_player_end = follow_player_duration
         self.preshoot_end = preshoot_duration + self.follow_player_end
@@ -157,9 +159,9 @@ class Laser(Object, BaseBullet):
             self.alive = False
         self.pos = self.owner.sprite_to_screen(self.owner.GUN)
         if self.timer < self.follow_player_end:
-            self.angle = self.owner.angle
+            self.angle = self.owner.angle + self.offset_angle
         else:
-            self.owner.angle = self.angle
+            self.owner.angle = self.angle - self.offset_angle
 
         # Shooting
         if self.timer == self.preshoot_end:

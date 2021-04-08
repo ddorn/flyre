@@ -1,4 +1,5 @@
-from random import gauss, random
+from itertools import chain
+from random import choice, gauss, random
 
 from pygame import Vector2
 
@@ -6,12 +7,13 @@ from src.engine import *
 from .bullets import Bomb, Bullet, Laser
 from .spaceship import SpaceShip
 
-__all__ = ["Enemy", "LaserEnemy", "ChargeEnemy", "CopyEnemy", "BomberEnemy"]
+__all__ = ["Enemy", "LaserEnemy", "ChargeEnemy", "CopyEnemy", "BomberEnemy", "Boss"]
 
 
 class Enemy(SpaceShip):
     SCALE = 2
     INVICIBILITY_DURATION = 5
+    SCORE = 100
 
     OFFSET = (-8, -9)
     SIZE = Vector2(17, 17) * SCALE
@@ -109,6 +111,7 @@ class ChargeEnemy(Enemy):
 class CopyEnemy(Enemy):
     SCALE = 2
     MAX_THRUST = 0.5
+    SCORE = 200
 
     SIZE = Vector2(17, 13) * SCALE
     OFFSET = Vector2(-7, -11)
@@ -179,3 +182,135 @@ class BomberEnemy(Enemy):
             yield from self.go_straight_to()
             yield from self.slow_down_and_stop()
             self.fire(self.state)
+
+
+class Boss(Enemy):
+    MAX_THRUST = Enemy.MAX_THRUST * 2
+    INITIAL_LIFE = 20_000
+    OFFSET = (-2, 0)
+    SIZE = Vector2(27, 31) * Enemy.SCALE
+    GUN = (16, 4)
+    SIDE_GUNS = ((5, 2), (26, 2))
+    KNOCK_BACK = 0
+
+    SCORE = 2000
+
+    def __init__(self, pos):
+        super().__init__(pos, 5)
+
+        from . import HealthBar
+
+        self.health_bar = HealthBar((0, 0, 30, 2), (255, 0, 0, 200), self)
+
+    def logic(self, state):
+        super().logic(state)
+        self.health_bar.center = (
+            self.center.x,
+            self.center.y - self.image.get_height() / 2 - 5,
+        )
+        self.health_bar.logic(state)
+
+    def draw(self, gfx):
+        super().draw(gfx)
+        self.health_bar.draw(gfx)
+
+    def fire(self, *args):
+        choice([self.fire_bullets, self.fire_laser()])()
+
+    def _fire(self, pos, angle, kind):
+        self.state.add(
+            Bullet(pos, from_polar(1, angle), self, self.bullet_damage, kind=kind,)
+        )
+
+    def random_fire(self):
+        kind = randrange(0, 2)
+        if kind == 0:
+            for _ in range(3):
+                self.fire_bullets()
+                yield from self.hover_around(6)
+        elif kind == 1:
+            lasers = list(self.fire_laser())
+            while any(l.alive for l in lasers):
+                yield from self.slow_down_and_stop()
+                yield
+        else:
+            yield from self.go_straight_to(prop_in_rect(WORLD, 0.5, 0.2), 10)
+            for i in range(100):
+                angle = i * 14
+                self._fire(self.center, angle, 1 + i % 2)
+                yield from self.run_and_wait(
+                    chain(
+                        self.go_straight_to(prop_in_rect(WORLD, 0.5, 0.2), 10),
+                        self.slow_down_and_stop(),
+                    ),
+                    3,
+                    exact=True,
+                )
+
+    def fire_bullets(self):
+        for gun, delta_angle in zip(self.SIDE_GUNS, (7, -7)):
+            self.state.add(
+                Bullet(
+                    self.sprite_to_screen(gun),
+                    from_polar(1, self.angle + delta_angle),
+                    self,
+                )
+            )
+
+    def fire_laser(self):
+        nb_lasers = choice([3, 5])
+        for i in range(nb_lasers):
+            offset = (i - nb_lasers // 2) * 30
+            yield self.state.add(
+                Laser(self, self.state.player, 40, 30, 30, offset_angle=offset)
+            )
+
+    def fire_spiral(self):
+        lines = 5
+        for angle in range(0, 360, 5):
+            for line in range(lines):
+                self.state.add(
+                    Bullet(
+                        self.center,
+                        from_polar(1, angle + line * 360 / lines),
+                        self,
+                        kind=1 + (angle + line) % 2,
+                    )
+                )
+
+                yield
+
+    def script(self):
+        yield from self.go_to()
+
+        phase = 1
+        while True:
+            prop = self.life / self.max_life
+            yield from self.go_straight_to()
+            yield from self.hover_around(30 * (1 - prop))
+            yield from self.random_fire()
+
+            if prop < 1 - phase / 3:
+                phase += 1
+
+                for i in range(20):
+                    self.state.particles.add(
+                        SquareParticle(ORANGE)
+                        .builder()
+                        .at(self.center, uniform(0, 360))
+                        .velocity(gauss(10, 1), 2)
+                        .living(15)
+                        .sized(5)
+                        .anim_fade()
+                        .anim_shrink()
+                        .build()
+                    )
+
+                yield from self.go_straight_to(WORLD.center, 10)
+                yield from self.slow_down_and_stop()
+                yield from self.fire_spiral()
+                yield from range(60)
+
+            if len(list(self.state.get_all(Enemy))) < phase + 1:
+                en = choice([Enemy, LaserEnemy, BomberEnemy, ChargeEnemy,])
+                self.state.add(en((uniform(WORLD.left, WORLD.right), WORLD.top - 40)))

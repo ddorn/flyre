@@ -4,6 +4,7 @@ from src.engine import *
 
 __all__ = ["SpaceShip"]
 
+
 from .bullets import Bomb
 
 
@@ -108,7 +109,7 @@ class SpaceShip(Entity):
         distance = pos - p
         dist = distance.length()
 
-        if dist > radius:
+        if dist > radius or dist == 0:
             return pygame.Vector2()
 
         norm = chrange(
@@ -117,12 +118,15 @@ class SpaceShip(Entity):
             (0, self.MAX_THRUST * 2),
             flipped=True,
         )
+
         distance.scale_to_length(norm)
         return -distance
 
-    def force_to_avoid_all_ships(self):
+    def force_to_avoid_all_ships(self, avoid_player=True):
+        from src.objects import Enemy
+
         thrust = pygame.Vector2()
-        for ship in self.state.get_all(SpaceShip, Bomb):
+        for ship in self.state.get_all(SpaceShip if avoid_player else Enemy, Bomb):
             if ship is self:
                 continue
             r = ship.size.length() + self.size.length()
@@ -153,12 +157,12 @@ class SpaceShip(Entity):
             * chrange(dist, (0, WORLD.height - up), (0, 1))
         )
 
-    def random_but_high(self, avoid=(), radius=50) -> pygame.Vector2:
-        margin = 15
+    def random_but_high(self, avoid=(), margin=40) -> pygame.Vector2:
+
         rect = WORLD.inflate(-2 * margin, -2 * margin)
         rect.height = WORLD.height / 2 - 2 * margin
         return random_in_rect_and_avoid(
-            rect, avoid, radius, default=random_in_rect(rect)
+            rect, avoid, 2 * self.size.length(), default=random_in_rect(rect)
         )
 
     def go_to(self, goal=None, precision=30):
@@ -186,15 +190,17 @@ class SpaceShip(Entity):
 
             yield
 
-    def go_straight_to(self, goal=None, precision=30):
+    def go_straight_to(self, goal=None, precision=40, max_duration=3 * 60):
         if goal is None:
             goal = self.random_but_high(
                 [e.center for e in self.state.get_all(SpaceShip)], 100
             )
 
-        while self.center.distance_to(goal) > precision:
+        timer = 0
+        while self.center.distance_to(goal) > precision and timer < max_duration:
+            timer += 1
 
-            thrust = self.force_to_avoid_all_ships()
+            thrust = self.force_to_avoid_all_ships(False)
             if thrust.length() == 0:
                 self.state.debug.point(*self.center, "red")
                 thrust += (goal - self.center).normalize() * self.MAX_THRUST
@@ -205,6 +211,17 @@ class SpaceShip(Entity):
 
             self.vel += thrust
 
+            yield
+
+    def run_and_wait(self, generator, waiting, exact=False):
+        frames = 0
+        for _ in generator:
+            frames += 1
+            yield
+            if exact and frames == waiting:
+                return
+
+        for _ in range(frames, waiting):
             yield
 
     def hover_around(self, duration):
@@ -234,10 +251,14 @@ class SpaceShip(Entity):
             self.vel += clamp_length(thrust, self.MAX_THRUST)
             yield
 
-    def slow_down_and_stop(self):
+    def slow_down_and_stop(self, frames=1):
         # Stopped
-        while self.vel.length() != 0:
-            self.vel -= self.vel.normalize() * min(self.MAX_THRUST, self.vel.length())
+        while self.vel.length() != 0 or frames > 0:
+            if self.vel.length():
+                self.vel -= self.vel.normalize() * min(
+                    self.MAX_THRUST, self.vel.length()
+                )
+            frames -= 1
             yield
 
     def charge_to_player(self):
