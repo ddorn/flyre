@@ -29,8 +29,14 @@ class HighScoreState(MyState):
         right = W / 4 * 3
 
         scores = settings.highscores[:]
-        if settings.highscores.count(settings.last_score) == 0:
+        if (
+            settings.last_score is not None
+            and settings.highscores.count(settings.last_score) == 0
+        ):
             scores.append(settings.last_score)
+
+        if not scores:
+            scores = [("yet!", "There are no scores...")]
 
         surfs = [text(name, 24, WHITE) for _, name in scores]
 
