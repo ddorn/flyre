@@ -34,6 +34,9 @@ class Settings:
 
     def __init__(self):
         self.debug = False
+        self.highscores = []
+        self.name = "Cool kid"
+        self.last_score = None
 
     def load(self):
         """(re)load the settings from the file. Called automatically on the first instance of Settings."""

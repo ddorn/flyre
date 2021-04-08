@@ -46,7 +46,7 @@ class State:
 
         self.running_script = self.script()
 
-    def create_inputs(self):
+    def create_inputs(self) -> Inputs:
         pygame.joystick.init()
         nb = pygame.joystick.get_count()
         self.debug.text("Joysticks:", nb)

@@ -103,6 +103,9 @@ class Debug(Object):
             self.nb_txt_this_frame += 1
 
     def draw(self, gfx):
+        if not self.enabled:
+            return
+
         if self.paused:
             self.points, self.vectors, self.rects, self.texts = self.lasts
 

@@ -14,9 +14,7 @@ class GameOverState(MyState):
             Text(f"Score: {player.score}", YELLOW, 32, midtop=r.rect.midbottom)
         )
 
-        from . import GameState
-
-        from . import MenuState
+        from . import GameState, MenuState
 
         self.add(
             Menu(

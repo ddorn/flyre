@@ -43,7 +43,6 @@ class Level:
             BomberEnemy,
             ChargeEnemy,
             lambda *args: CopyEnemy(*args, player=self.state.player),
-            Boss,
         ]
 
     def random_enemy(self) -> Enemy:
@@ -75,21 +74,10 @@ class Level:
         yield
 
 
-class Level0(Level):
-    """For demo purposes."""
-
-    def script(self):
-        for e in self.all_enemy_types():
-            self.spawn(e, 0)
-            yield from self.wait_until_dead()
-
-
 class Level1(Level):
     """First level, "tutorial"."""
 
     def script(self):
-        self.spawn(BomberEnemy)
-        yield from self.wait_until_dead()
         self.spawn(Enemy, -1)
         self.spawn(Enemy, 1)
         yield from self.wait_until_dead()
@@ -186,13 +174,11 @@ class Level5(Level):
             self.spawn(e)
 
 
-class Level7(Level):
-    """Hell breaks loose"""
+class Level6(Level):
+    """Hell breaks loose but not that much"""
 
     def script(self):
         player = self.state.player
-        self.spawn(CopyEnemy, 0, player)
-        yield from self.wait_until_dead()
 
         self.spawn(CopyEnemy, -2, player)
         self.spawn(CopyEnemy, 2, player)
@@ -205,7 +191,7 @@ class Level7(Level):
             yield from self.wait(3)
 
 
-class Level8(Level):
+class Level7(Level):
     """Hell breaks loose...r"""
 
     def script(self):
@@ -216,6 +202,25 @@ class Level8(Level):
                 self.spawn(e)
                 self.spawn(CopyEnemy, None, player)
                 yield from self.wait(4)
+
+
+class Level8(Level):
+    """Da boss."""
+
+    def script(self):
+        self.spawn(Boss, 0)
+
+
+class Level9(Level):
+    """Who said it is over ?"""
+
+    def script(self):
+        self.spawn(
+            Boss, -2,
+        )
+        self.spawn(
+            Boss, 2,
+        )
 
 
 LEVELS = Level.__subclasses__()

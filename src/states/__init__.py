@@ -5,3 +5,5 @@ from .pause import PauseState
 from .game_over import GameOverState
 from .my_state import MyState
 from .skillpickup import SkillPickUp
+from .name import NameInputState
+from .highscores import HighScoreState

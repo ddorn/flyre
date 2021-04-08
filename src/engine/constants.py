@@ -31,6 +31,8 @@ DOWNWARDS = 90  # degrees
 
 DEBUG = False
 
+HIGH_SCORES_ENTRIES = 6
+TITLE_MARGIN = 32
 
 # Joystick buttons id on my joystick (xbox)
 JOY_A = 0

@@ -11,13 +11,15 @@ class MenuState(MyState):
     def __init__(self):
         super().__init__()
 
+        from . import HighScoreState
+
         self.add(Text("Kuglo", ORANGE, 64, midtop=(W / 2, 32)))
         self.add(
             Menu(
                 (W / 2, 150),
                 {
                     "Play": self.push_state_callback(GameState),
-                    "Highscores": self.push_state_callback(SkillPickUp, Player((0, 0))),
+                    "Highscores": self.push_state_callback(HighScoreState),
                     "Settings": lambda: 0,
                     "Quit": App.MAIN_APP.quit,
                 },

@@ -195,12 +195,13 @@ class Boss(Enemy):
 
     SCORE = 2000
 
-    def __init__(self, pos):
+    def __init__(self, pos, home_pos=WORLD.center):
         super().__init__(pos, 5)
 
         from . import HealthBar
 
         self.health_bar = HealthBar((0, 0, 30, 2), (255, 0, 0, 200), self)
+        self.home_pos = home_pos
 
     def logic(self, state):
         super().logic(state)
@@ -281,7 +282,7 @@ class Boss(Enemy):
                 yield
 
     def script(self):
-        yield from self.go_to()
+        yield from self.go_straight_to(self.home_pos)
 
         phase = 1
         while True:
@@ -306,7 +307,7 @@ class Boss(Enemy):
                         .build()
                     )
 
-                yield from self.go_straight_to(WORLD.center, 10)
+                yield from self.go_straight_to(self.home_pos, 10)
                 yield from self.slow_down_and_stop()
                 yield from self.fire_spiral()
                 yield from range(60)

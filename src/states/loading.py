@@ -13,7 +13,7 @@ class LoadingState(State):
         super().__init__()
         self.images = list(IMAGES.glob("*.png"))
         self.progress = 0
-        self.debug.enabled = True
+        self.debug.enabled = 0
 
     def script(self):
         start = time()
@@ -42,5 +42,5 @@ class LoadingState(State):
         gfx.box(r, YELLOW)
         gfx.rect(start, y - height / 2 - 1, end - start, height + 2, YELLOW, 1)
 
-        s = text(f"{round(prop * 100)}%", 14, YELLOW)
-        gfx.blit(s, midleft=(end + 10, y))
+        # s = text(f"{round(prop * 100)}%", 14, YELLOW)
+        # gfx.blit(s, midleft=(end + 10, y))

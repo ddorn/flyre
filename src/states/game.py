@@ -6,6 +6,7 @@ from pygame import Vector2
 from src.level import LEVELS
 from src.objects import *
 from .my_state import MyState
+from .name import NameInputState
 from .skillpickup import SkillPickUp
 
 
@@ -39,7 +40,7 @@ class GameState(MyState):
         )
         inputs["fire"].on_press_repeated(lambda _: self.player.fire(self), 0.1)
 
-        inputs["pause"] = Button(pygame.K_p, JoyButton(JOY_Y))
+        inputs["pause"] = Button(pygame.K_p, JoyButton(JOY_Y), JoyButton(JOY_X))
         inputs["pause"].on_press(self.set_pause)
 
         def cheat(_):
@@ -68,9 +69,9 @@ class GameState(MyState):
         super().logic()
 
         if not self.player.alive:
-            from . import GameOverState
+            from . import NameInputState
 
-            self.replace_state(GameOverState(self.player))
+            self.replace_state(NameInputState(self.player))
 
     def script(self):
         for i, level in enumerate(LEVELS):
@@ -89,9 +90,7 @@ class GameState(MyState):
 
             self.push_state(SkillPickUp(self.player))
 
-        from . import GameOverState
-
-        self.replace_state(GameOverState(self.player))
+        self.replace_state(NameInputState(self.player))
 
     def draw(self, gfx: "GFX"):
         super().draw(gfx)
