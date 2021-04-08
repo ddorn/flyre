@@ -37,7 +37,6 @@ class Player(SpaceShip):
 
         super().__init__(pos, image, self.OFFSET, self.SIZE)
         self.max_speed = 5
-
         self.health_bar = HealthBar((0, 0, 30, 1), (255, 0, 0, 200), self)
 
         # self.debuffs.add(RegenDebuff(100000000, 0.01))

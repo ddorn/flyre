@@ -8,7 +8,7 @@ from src.objects import Planet
 
 class MyState(State):
     BG_RECT = SCREEN
-    BG_COLORS = [pygame.Color(c) for c in ["#203040", "#481e66", "#008782", "#3f1f3c"]]
+    BG_COLORS = [pygame.Color(c) for c in ["#203040", "#481e66", "#00605b", "#3f1f3c"]]
     NB_PLANETS = 6
 
     def __init__(self):

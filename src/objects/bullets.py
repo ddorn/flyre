@@ -1,5 +1,7 @@
+from math import pi, sin
 from random import gauss, random, uniform
 
+import pygame.gfxdraw
 from pygame import Vector2
 
 from src.engine import *
@@ -211,6 +213,7 @@ class Bomb(Object, BaseBullet):
     Z = 1
     SIZE = (9, 9)
     SPEED = 3
+    RADIUS = 40
 
     def __init__(self, center, owner, target: Vector2, damage=200, timer=1 * 60):
 
@@ -221,6 +224,7 @@ class Bomb(Object, BaseBullet):
 
         BaseBullet.__init__(self, owner, damage, self.SPEED, vel.as_polar()[1])
         self.animation = Animation(f"bomb")
+        self.duration = timer
         self.timer = timer
 
     def logic(self, state):
@@ -232,12 +236,16 @@ class Bomb(Object, BaseBullet):
         if self.center.distance_to(self.target) < 2 * self.SPEED:
             self.timer -= 1
             self.vel *= 0
+            self.set = True
 
         if self.timer == 0:
-            self.animation = Animation("explosion")
+            self.animation = Animation("explosion1")
             play("explosion")
             for ship in state.get_all(SpaceShip):
-                if ship.center.distance_to(self.center) < 20 + ship.size.length() / 2:
+                if (
+                    ship.center.distance_to(self.center)
+                    < self.RADIUS + ship.size.length() / 2
+                ):
                     self.angle = (ship.center - self.center).as_polar()[1]
                     ship.hit(self)
 
@@ -245,5 +253,19 @@ class Bomb(Object, BaseBullet):
             self.alive = False
 
     def draw(self, gfx):
+
+        if 0 < self.timer < self.duration:
+            alpha = (
+                abs(
+                    sin(
+                        chrange(self.duration - self.timer, (0, self.duration), (0, pi))
+                    )
+                )
+                * 40
+            )
+            pygame.gfxdraw.filled_circle(
+                gfx.surf, *vec2int(self.center), self.RADIUS, RED + (int(alpha),)
+            )
+
         frame = self.animation.image()
         gfx.blit(frame, center=self.center)

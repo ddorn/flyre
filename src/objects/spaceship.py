@@ -27,6 +27,7 @@ class SpaceShip(Entity):
     MAX_THRUST = 0.2
     KNOCK_BACK = 2
     CONTACT_DAMAGE = 100
+    CONCTACT_RESISTANCE = 1
     INITIAL_BULLET_DAMAGE = 100
 
     def __init__(
@@ -303,7 +304,10 @@ class SpaceShip(Entity):
         for ship, duration in self.overlapping_ships.items():
             if duration % 20 == 0:
                 play("hit")
-                self.damage(ship.CONTACT_DAMAGE, ignore_invincibility=True)
+                self.damage(
+                    ship.CONTACT_DAMAGE * ship.CONCTACT_RESISTANCE,
+                    ignore_invincibility=True,
+                )
 
         to_remove = set()
         for debuff in self.debuffs:

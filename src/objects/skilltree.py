@@ -109,10 +109,9 @@ def fire_duration(player):
     player.fire_duration += 30
 
 
-@Power.make("Shield", "Activate shield with X.", 15)
-def shield(player):
-    # TODO: idk how to do the shield
-    pass
+@Power.make("Extra defense", "Receive half damage from contacts", 15)
+def extra_defense(player):
+    player.CONCTACT_RESISTANCE /= 2
 
 
 class Node(Object):
@@ -189,7 +188,7 @@ class Node(Object):
 def build_skill_tree():
     return Node(
         bullets_up,
-        Node(life_up, Node(regen), Node(shield)),
+        Node(life_up, Node(regen), Node(extra_defense)),
         Node(attack_up, Node(crit_dmg), Node(crit_prob)),
         Node(fire_atk, Node(fire_dmg), Node(fire_duration)),
     )

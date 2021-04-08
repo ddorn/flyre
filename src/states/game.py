@@ -1,4 +1,6 @@
-from pygame import Vector2
+from random import choice
+
+from pygame import Rect, Vector2
 
 from src.engine import *
 from pygame import Vector2
@@ -18,6 +20,8 @@ class GameState(MyState):
         self.add(
             HealthBar((INFO_RECT.topleft + Vector2(9, 347), (180, 5)), RED, self.player)
         )
+
+        self.triva = self.get_trivia()
 
     def create_inputs(self):
         inputs = super().create_inputs()
@@ -75,8 +79,10 @@ class GameState(MyState):
 
     def script(self):
         for i, level in enumerate(LEVELS):
+            self.triva = self.get_trivia()
+
             # Draw level name
-            self.add(Title(f"Level {i + 1}", duration=2 * 60))
+            yield from self.add(Title(f"Level {i + 1}", duration=60)).wait_until_dead()
 
             # Run the level
             self.lvl = level(self)
@@ -102,7 +108,7 @@ class GameState(MyState):
 
         # The score
         score = auto_crop(font(20).render(str(self.player.score), False, YELLOW))
-        gfx.blit(score, bottomright=INFO_RECT.topleft + Vector2(197, 34))
+        gfx.blit(score, bottomright=INFO_RECT.topleft + Vector2(197, 39))
 
         self.player.skill_tree.layout((INFO_RECT.centerx + 1, 209))
         self.player.skill_tree.draw(gfx)
@@ -141,3 +147,32 @@ class GameState(MyState):
         # BURN
         s = get(f"{int(100 * self.player.fire_chance)}%", ORANGE)
         gfx.blit(s, topright=BURN)
+
+        TRIVAL_TL = Vector2(5, 304) + INFO_RECT.topleft
+        TRIVAL_SIZE = (198, 32)
+        r = Rect(TRIVAL_TL, TRIVAL_SIZE)
+        s = text(self.triva, 7, "#5a6988", "pixelmillennium")
+        gfx.blit(s, center=r.center)
+
+    def get_trivia(self):
+        return choice(
+            [
+                "There is actually only one purple button in the game.",
+                "Beware of the bombs.",
+                "42",
+                "Press P to pause the game.",
+                "The game is better with a controller !",
+                "Have you seen my bullet ?",
+                "The Copy ship has the same bullets as yours. Including critical hits.",
+                "This game was made in one week for the Pygame Comunity Easter game jam.",
+                "Its only song was composed by @Ploruto, based on a recording of Cozy's voice.",
+                "Cozy's MI is actually a F tic tac toe 4.",
+                "Pandas will overrule snakes.",
+                "Optimisation is the root of all evil",
+                "Legend tells said that someone survived level 9.",
+                "You can beat some levels without shooting.",
+                "All planets are made with @deep-fold 'Pixel planet generator'",
+                "The most used font is Wellbutrin",
+                "The cool looking bomb explosion was made by Will Tice",
+            ]
+        )

@@ -101,7 +101,7 @@ class ChargeEnemy(Enemy):
         prep_len = 60
         for t in range(prep_len):
             self.state.particles.add(self.get_charge_particle(t / prep_len))
-            yield
+            yield from self.slow_down_and_stop(1)
 
         yield from self.charge_to_player()
 
@@ -174,14 +174,23 @@ class BomberEnemy(Enemy):
     def __init__(self, pos):
         super().__init__(pos, 4)
 
+        self.last_fire = 0
+
+    def logic(self, state):
+        super().logic(state)
+        self.last_fire += 1
+
     def fire(self, state, direction=None):
         state.add(Bomb(self.center, self, state.player.center, self.bullet_damage))
+        self.last_fire = 0
 
     def script(self):
         while True:
             yield from self.go_straight_to()
             yield from self.slow_down_and_stop()
-            self.fire(self.state)
+
+            if self.last_fire > 30:
+                self.fire(self.state)
 
 
 class Boss(Enemy):

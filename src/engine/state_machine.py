@@ -12,7 +12,7 @@ from .utils import mix
 
 T = TypeVar("T")
 
-__all__ = ["State", "StateMachine"]
+__all__ = ["State", "StateMachine", "StateOperations"]
 
 
 class StateOperations(Enum):

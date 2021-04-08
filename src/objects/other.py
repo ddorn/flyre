@@ -179,10 +179,10 @@ class Title(Object):
             yield
 
         for i in range(self.duration):
-            if i % 60 < 45:
-                self.shown_image = self.text_surf
-            else:
-                self.shown_image = pygame.Surface((0, 0))
+            # if i % 30 < 20:
+            self.shown_image = self.text_surf
+            # else:
+            #     self.shown_image = pygame.Surface((0, 0))
             yield
 
         for i in range(larger_frames):

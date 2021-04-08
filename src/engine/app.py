@@ -7,7 +7,7 @@ import sys
 from .gfx import GFX
 from .screen import ExtendFieldOfViewScreen, Screen
 from .settings import settings
-from .state_machine import State, StateMachine
+from .state_machine import State, StateMachine, StateOperations
 
 __all__ = ["App"]
 
@@ -89,7 +89,7 @@ class App(StateMachine):
         """Properly exit the app."""
 
         while self.stack:
-            self.state = None
+            self.state = (StateOperations.POP, None)
 
         sys.exit()
 
