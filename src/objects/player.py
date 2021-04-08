@@ -42,11 +42,9 @@ class Player(SpaceShip):
         # self.debuffs.add(RegenDebuff(100000000, 0.01))
 
     def move_horizontally(self, axis: Axis):
-        print(axis)
         self.vel.x += axis.value * self.MAX_THRUST * 2
 
     def move_vertically(self, axis: Axis):
-        print(axis)
         self.vel.y += axis.value * self.MAX_THRUST * 2
 
     def get_guns_positions(self):

@@ -4,6 +4,8 @@ from pathlib import Path
 
 __all__ = ["Settings", "settings"]
 
+from .constants import ASSETS_DIR
+
 
 class Settings:
     """
@@ -13,7 +15,7 @@ class Settings:
     """
 
     _instance = None
-    PATH = Path(__file__).parent / "settings.json"
+    PATH = ASSETS_DIR / "settings.json"
 
     def __new__(cls):
         if cls._instance:

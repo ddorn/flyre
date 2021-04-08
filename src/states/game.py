@@ -1,4 +1,4 @@
-from random import choice
+from random import choice, gauss
 
 from pygame import Rect, Vector2
 
@@ -78,7 +78,7 @@ class GameState(MyState):
             self.replace_state(NameInputState(self.player))
 
     def script(self):
-        for i, level in enumerate(LEVELS):
+        for i, level in enumerate(LEVELS[:0]):
             self.triva = self.get_trivia()
 
             # Draw level name
@@ -90,11 +90,32 @@ class GameState(MyState):
             yield from self.lvl.wait_until_dead()
 
             # Write cleared
-            yield from self.add(
-                Title("Level cleared", GREEN, animation="blink")
-            ).wait_until_dead()
+            if i != len(LEVELS) - 1:
+                yield from self.add(
+                    Title("Level cleared", GREEN, animation="blink")
+                ).wait_until_dead()
 
             self.push_state(SkillPickUp(self.player))
+
+        self.add(Title("You won!", ORANGE, animation="blink"))
+
+        for _ in range(200):
+            yield from range(6)
+            center = random_in_rect(WORLD)
+            color = choice([ORANGE, RED, GREEN, YELLOW])
+            for i in range(100):
+                self.particles.add(
+                    SquareParticle(color)
+                    .builder()
+                    .at(center, a := uniform(0, 360))
+                    # .hsv(a, 0.8)
+                    .velocity(gauss(3, 0.5))
+                    .acceleration(-0.05)
+                    .anim_fade()
+                    .living(60)
+                    .sized(4)
+                    .build()
+                )
 
         self.replace_state(NameInputState(self.player))
 

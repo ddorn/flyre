@@ -49,10 +49,10 @@ class NameInputState(MyState):
         return inputs
 
     def validate(self):
-        from . import GameOverState
+        from . import GameOverState, HighScoreState
 
         if self.name:
-            self.replace_state(GameOverState(self.player))
+            self.replace_state(HighScoreState())
 
             entry = [self.player.score, self.name]
             settings.name = self.name

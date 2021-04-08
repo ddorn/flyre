@@ -105,7 +105,7 @@ class State:
 
         try:
             r = next(self.running_script)
-            assert r is None, f"You are returning objects from {self.running_script}"
+            # assert r is None, f"You are returning objects from {self.running_script}"
         except StopIteration:
             pass
 
