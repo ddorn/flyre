@@ -151,7 +151,7 @@ class GameState(MyState):
         TRIVAL_TL = Vector2(5, 304) + INFO_RECT.topleft
         TRIVAL_SIZE = (198, 32)
         r = Rect(TRIVAL_TL, TRIVAL_SIZE)
-        s = text(self.triva, 7, "#5a6988", "pixelmillennium")
+        s = wrapped_text(self.triva, 7, "#5a6988", r.w, "pixelmillennium")
         gfx.blit(s, center=r.center)
 
     def get_trivia(self):
@@ -165,14 +165,15 @@ class GameState(MyState):
                 "Have you seen my bullet ?",
                 "The Copy ship has the same bullets as yours. Including critical hits.",
                 "This game was made in one week for the Pygame Comunity Easter game jam.",
-                "Its only song was composed by @Ploruto, based on a recording of Cozy's voice.",
+                "The song was composed by Ploruto, based on a recording of Cozy's voice.",
                 "Cozy's MI is actually a F tic tac toe 4.",
                 "Pandas will overrule snakes.",
                 "Optimisation is the root of all evil",
                 "Legend tells said that someone survived level 9.",
                 "You can beat some levels without shooting.",
-                "All planets are made with @deep-fold 'Pixel planet generator'",
-                "The most used font is Wellbutrin",
-                "The cool looking bomb explosion was made by Will Tice",
+                "All planets are made with the use of deep-fold 'Pixel planet generator'.",
+                "The most used font is called Wellbutrin.",
+                "The cool looking bomb explosion was made by Will Tice. Check him out on itch.io!",
+                "The game name, 'Flyre' was found one hour before the deadline.",
             ]
         )

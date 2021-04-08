@@ -7,15 +7,15 @@ all: linux windows zip
 
 zip: mkdist
 	@echo -e "$(GREEN)Updating zip...$(END)"
-	@git ls-files | zip --filesync -r --names-stdin dist/yzoc.zip
+	@git ls-files | zip --filesync -r --names-stdin dist/flyre.zip
 
 linux: mkdist
 	@echo -e "$(GREEN)Building for linux...$(END)"
-	PYTHONPATH=src poetry run pyinstaller --noconsole --add-data src/assets/:src/assets --onefile yzoc.py
+	PYTHONPATH=src poetry run pyinstaller --noconsole --add-data src/assets/:src/assets --onefile flyre.py
 
 windows: mkdist
 	@echo -e "$(GREEN)Building for windows...$(END)"
-	WINEDEBUG=-all wine pyinstaller.exe --noconsole --add-data src\\assets\;src\\assets --onefile yzoc.py
+	WINEDEBUG=-all wine pyinstaller.exe --noconsole --add-data src\\assets\;src\\assets --onefile flyre.py
 
 run:
 	@poetry run python yzoc.py

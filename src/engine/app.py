@@ -7,7 +7,7 @@ import sys
 from .gfx import GFX
 from .screen import ExtendFieldOfViewScreen, Screen
 from .settings import settings
-from .state_machine import State, StateMachine, StateOperations
+from .state_machine import GAME_NAME, State, StateMachine, StateOperations
 
 __all__ = ["App"]
 
@@ -23,7 +23,7 @@ class App(StateMachine):
     All the game logic and randering is done by the states themselves.
     """
 
-    NAME = "Pygame window"
+    NAME = GAME_NAME
     MAIN_APP: "App" = None
     MOUSE_VISIBLE = False
 

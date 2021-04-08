@@ -3,17 +3,23 @@ from glob import glob
 from time import time
 
 from src.engine import *
+from .my_state import MyState
 from .menu import MenuState
+from ..objects import Text
 
 
 class LoadingState(State):
     FPS = 500
+
+    BG_COLOR = MyState.BG_COLORS[0]
 
     def __init__(self):
         super().__init__()
         self.images = list(IMAGES.glob("*.png"))
         self.progress = 0
         self.debug.enabled = 0
+
+        self.add(Text(GAME_NAME, YELLOW, TITLE_SIZE, center=(W / 2, H / 3)))
 
     def script(self):
         start = time()

@@ -1,7 +1,7 @@
 [tool.poetry]
-name = "Yzoc"
-version = "0.1.0"
-description = ""
+name = "Flyre"
+version = "1.0.0"
+description = "A pixel art shooter with a skill tree."
 authors = ["ddorn <diego.dorn@free.fr>"]
 license = "MIT"
 

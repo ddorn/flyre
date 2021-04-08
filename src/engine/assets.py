@@ -80,6 +80,36 @@ def colored_text(size, *parts, name=None):
 
 
 @lru_cache()
+def wrapped_text(txt: str, size, color, max_width, name=None):
+    f = font(size, name)
+
+    words = txt.split()
+    surfaces = []
+    while words:
+        line = []
+        while f.size(" ".join(line))[0] < max_width:
+            if not words:
+                break
+            line.append(words.pop(0))
+        else:
+            words.insert(0, line.pop())
+        surfaces.append(text(" ".join(line), size, color, name))
+
+    w = max(s.get_width() for s in surfaces)
+    h = sum(s.get_height() for s in surfaces)
+
+    output = pygame.Surface((w, h))
+    output.set_colorkey(0)
+
+    y = 0
+    for surf in surfaces:
+        output.blit(surf, surf.get_rect(midtop=(w / 2, y)))
+        y += surf.get_height()
+
+    return output
+
+
+@lru_cache()
 def tilemap(name, x, y, tile_size=32):
     img = image(name)
     w = img.get_width()

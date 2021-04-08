@@ -2,8 +2,10 @@ from pathlib import Path
 
 import pygame
 
+GAME_NAME = "Flyre"
 SIZE = (640, 360)
 W, H = SIZE
+TITLE_SIZE = 70
 
 SCREEN = pygame.Rect(0, 0, W, H)
 WORLD = pygame.Rect(0, 0, W - 208, H)
