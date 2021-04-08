@@ -209,18 +209,16 @@ class Level8(Level):
 
     def script(self):
         self.spawn(Boss, 0)
+        yield
 
 
 class Level9(Level):
     """Who said it is over ?"""
 
     def script(self):
-        self.spawn(
-            Boss, -2,
-        )
-        self.spawn(
-            Boss, 2,
-        )
+        self.spawn(Boss, -2, prop_in_rect(WORLD, 0.25, 0.25))
+        self.spawn(Boss, 2, prop_in_rect(WORLD, 0.75, 0.25))
+        yield
 
 
 LEVELS = Level.__subclasses__()

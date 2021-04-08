@@ -77,6 +77,7 @@ class Bullet(SpriteObject, BaseBullet):
                     .anim_fade()
                     .build()
                 )
+
             if self.crit:
                 crit_text = font(42).render("CRIT!", False, RED)
 
@@ -96,13 +97,15 @@ class Bullet(SpriteObject, BaseBullet):
                     .build()
                 )
 
-                tot = 5
+                tot = 20
                 for i in range(tot):
                     state.particles.add(
-                        ShardParticle(YELLOW)
+                        SquareParticle(YELLOW)
                         .builder()
                         .at(self.pos, 360 * i / (tot - 1))
-                        .velocity(10)
+                        .velocity(v := 4, 3)
+                        .living(l := 30)
+                        .acceleration(-v / l)
                         .sized(4)
                         .anim_fade()
                         .build()

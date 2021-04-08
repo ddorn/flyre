@@ -1,4 +1,5 @@
 from functools import lru_cache
+from random import gauss
 from typing import Optional, TYPE_CHECKING
 
 import pygame
@@ -214,6 +215,8 @@ class Entity(SpriteObject):
         if self.invincible and not ignore_invincibility:
             return
 
+        amount *= gauss(1, 0.1)
+
         self.last_hit = 0
 
         self.life -= amount
@@ -232,7 +235,7 @@ class Entity(SpriteObject):
             .velocity(0)
             .sized(15)
             .anim_fade(0.5)
-            .anim_bounce_size_and_shrink()
+            .anim_bounce_size()
             .build()
         )
 

@@ -68,17 +68,17 @@ def bullet_speed_up(player):
     player.bullet_speed *= 1.1
 
 
-@Power.make("Critical hit probability", "+1% of critical hits", 7)
+@Power.make("Critical hit probability", "+5% of critical hits", 7)
 def crit_prob(player):
-    player.crit_chance += 0.01
+    player.crit_chance += 0.05
 
 
-@Power.make("Critical hit damage", "+1 to critical hit damage multiplier", 8)
+@Power.make("Critical hit damage", "+2 to critical hit damage multiplier", 8)
 def crit_dmg(player):
-    player.crit_mult += 0.5
+    player.crit_mult += 2
 
 
-@Power.make("Regeneration", "Regenerate 1% of life every 5s", 10)
+@Power.make("Regeneration", "Regenerate 1% of life every second", 10)
 def regen(player):
     for buff in player.debuffs:
         if isinstance(buff, RegenDebuff):
