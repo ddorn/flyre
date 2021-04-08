@@ -78,7 +78,7 @@ class GameState(MyState):
             self.replace_state(NameInputState(self.player))
 
     def script(self):
-        for i, level in enumerate(LEVELS[:0]):
+        for i, level in enumerate(LEVELS):
             self.triva = self.get_trivia()
 
             # Draw level name
