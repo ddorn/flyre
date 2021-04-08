@@ -7,7 +7,7 @@ from src.engine import *
 if TYPE_CHECKING:
     from . import SpaceShip, Player
 
-__all__ = ["Power", "build_skill_tree", "Node"]
+__all__ = ["Power", "build_skill_tree", "Node", "FireDebuff", "RegenDebuff", "Debuff"]
 
 
 @dataclass
