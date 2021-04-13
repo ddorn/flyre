@@ -6,7 +6,7 @@ from .skillpickup import SkillPickUp
 
 
 class MenuState(MyState):
-    BG_MUSIC = "cozyFractal.mp3"
+    BG_MUSIC = "cozyFractal.oga"
 
     def __init__(self):
         super().__init__()

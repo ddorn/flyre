@@ -18,7 +18,7 @@ windows: mkdist
 	WINEDEBUG=-all wine pyinstaller.exe --noconsole --add-data src\\assets\;src\\assets --onefile flyre.py
 
 run:
-	@poetry run python yzoc.py
+	@poetry run python flyre.py
 
 clean:
 	rm -r build
