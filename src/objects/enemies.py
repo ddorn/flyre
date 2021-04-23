@@ -14,6 +14,7 @@ class Enemy(SpaceShip):
     SCALE = 2
     INVICIBILITY_DURATION = 5
     SCORE = 100
+    BULLET_KIND = 3
 
     OFFSET = (-8, -9)
     SIZE = Vector2(17, 17) * SCALE
@@ -23,12 +24,12 @@ class Enemy(SpaceShip):
         super().__init__(pos, image, self.OFFSET, self.SIZE, rotation=180)
         # self.behavior = StationaryMultipleShooter(self)
 
-    def logic(self, state):
+    def logic(self):
         clamp_length(self.vel, self.max_speed)
-        super().logic(state)
+        super().logic()
 
         angle_towards_player = -90 + (
-            state.player.center - self.sprite_to_screen(self.GUN)
+            self.state.player.center - self.sprite_to_screen(self.GUN)
         ).angle_to((1, 0))
         self.rotation = angle_towards(self.rotation, angle_towards_player, 2)
 
@@ -42,7 +43,7 @@ class Enemy(SpaceShip):
                 yield from range(8)
 
     def fire(self, state, direction):
-        return state.add(Bullet(self.sprite_to_screen(self.GUN), direction, self))
+        return state.add(Bullet(self.sprite_to_screen(self.GUN), direction, self, kind=self.BULLET_KIND))
 
     def hit(self, bullet):
         super().hit(bullet)
@@ -127,6 +128,9 @@ class CopyEnemy(Enemy):
         self.player = player
 
     def fire(self, state, angle):
+        if not WORLD.collidepoint(self.center):
+            return
+
         from src.objects import Player
 
         for pos in Player.get_guns_positions(self.player):
@@ -140,13 +144,14 @@ class CopyEnemy(Enemy):
                     * (1 if not crit else self.player.crit_mult),
                     self.player.bullet_speed,
                     crit,
+                    kind=self.BULLET_KIND
                 )
             )
 
-    def logic(self, state):
+    def logic(self):
         for jet in (self.JET1, self.JET2):
-            state.debug.point(*self.sprite_to_screen(jet))
-            state.particles.add(
+            self.state.debug.point(*self.sprite_to_screen(jet))
+            self.state.particles.add(
                 SquareParticle(YELLOW)
                 .builder()
                 .at(self.sprite_to_screen(jet), gauss(self.angle + 180, 10))
@@ -158,7 +163,7 @@ class CopyEnemy(Enemy):
                 .build()
             )
 
-        super().logic(state)
+        super().logic()
 
     def script(self):
         yield from self.go_straight_to()
@@ -178,8 +183,8 @@ class BomberEnemy(Enemy):
 
         self.last_fire = 0
 
-    def logic(self, state):
-        super().logic(state)
+    def logic(self):
+        super().logic()
         self.last_fire += 1
 
     def fire(self, state, direction=None):
@@ -214,13 +219,13 @@ class Boss(Enemy):
         self.health_bar = HealthBar((0, 0, 30, 2), (255, 0, 0, 200), self)
         self.home_pos = home_pos
 
-    def logic(self, state):
-        super().logic(state)
+    def logic(self):
+        super().logic()
         self.health_bar.center = (
             self.center.x,
             self.center.y - self.image.get_height() / 2 - 5,
         )
-        self.health_bar.logic(state)
+        self.health_bar.logic()
 
     def draw(self, gfx):
         super().draw(gfx)
@@ -230,6 +235,7 @@ class Boss(Enemy):
         choice([self.fire_bullets, self.fire_laser()])()
 
     def _fire(self, pos, angle, kind):
+        # Spawn round bullets
         self.state.add(
             Bullet(pos, from_polar(1, angle), self, self.bullet_damage, kind=kind,)
         )
@@ -266,6 +272,7 @@ class Boss(Enemy):
                     self.sprite_to_screen(gun),
                     from_polar(1, self.angle + delta_angle),
                     self,
+                    kind=self.BULLET_KIND
                 )
             )
 
@@ -290,7 +297,7 @@ class Boss(Enemy):
                     )
                 )
 
-                yield
+                yield from self.slow_down_and_stop(1)
 
     def script(self):
         yield from self.go_straight_to(self.home_pos)
@@ -321,7 +328,7 @@ class Boss(Enemy):
                 yield from self.go_straight_to(self.home_pos, 10)
                 yield from self.slow_down_and_stop()
                 yield from self.fire_spiral()
-                yield from range(60)
+                yield from self.slow_down_and_stop(45)
 
             if len(list(self.state.get_all(Enemy))) < phase + 1:
                 en = choice([Enemy, LaserEnemy, BomberEnemy, ChargeEnemy,])

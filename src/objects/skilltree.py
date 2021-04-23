@@ -36,7 +36,7 @@ class Power:
 
     @property
     def background(self):
-        return tilemap("sprites", 0, 3, 32)
+        return tilemap("sprites", min(3, self.level), 3, 32)
 
     def draw(self, gfx, center, scaling=1, darken=False):
         bg = self.background

@@ -139,6 +139,7 @@ class SkillPickUp(MyState):
         self.tree.layout((SCREEN.centerx, 150), 64, 64)
         self.tree.draw(gfx, 2)
 
+        # Bottom backgorund
         bottom_rect = pygame.Rect(0, H - 54, W, 54)
         gfx.box(bottom_rect, (0, 0, 0, 180))
         pygame.draw.line(gfx.surf, YELLOW, bottom_rect.topright, bottom_rect.topleft)
@@ -150,9 +151,19 @@ class SkillPickUp(MyState):
                 s = colored_text(20, *self.error_message)
             gfx.blit(s, center=bottom_rect.center)
         else:
+            # Skills name/description
             current = self.selected()
             s = text(current.power.name, 20, YELLOW)
-            r = gfx.blit(s, midtop=(W / 2, bottom_rect.y + 6))
+            r: Rect = gfx.blit(s, midtop=(W / 2, bottom_rect.y + 6))
+
+            r_right = r.move(6, 0)
+            r_left = r.move(-6, 0)
+
+
+            star = tilemap("sprites", 4, 0, 16)
+            for i in range(current.power.level):
+                r_right = gfx.blit(star, midleft=r_right.midright)
+                r_left = gfx.blit(star, midright=r_left.midleft)
 
             s = text(current.power.description, 14, WHITE, "pixelmillennium")
             gfx.blit(s, midtop=r.midbottom)

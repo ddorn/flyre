@@ -11,6 +11,7 @@ from .particles import ParticleSystem
 from .pygame_input import Button, Inputs, JoyButton, QuitEvent
 from .settings import settings
 from .utils import mix
+from .object import Scriptable
 
 T = TypeVar("T")
 
@@ -24,7 +25,7 @@ class StateOperations(Enum):
     REPLACE = 3
 
 
-class State:
+class State(Scriptable):
     FPS = 60
     BG_COLOR = "black"
     BG_MUSIC = None
@@ -32,6 +33,7 @@ class State:
     BG_TRANSITION_TIME = 20 * 60
 
     def __init__(self):
+        super().__init__()
         self.timer = 0
         self.add_later = []
         self.add_object_lock = False
@@ -46,7 +48,7 @@ class State:
 
         self.inputs = Inputs()
 
-        self.running_script = self.script()
+        self.add_script(self.script())
 
     def create_inputs(self) -> Inputs:
         pygame.joystick.init()
@@ -111,15 +113,11 @@ class State:
             - self.push_state(new)
             - self.replace_state(new)
        """
+        super().logic()
+
         self.timer += 1
 
         self.update_bg()
-
-        try:
-            r = next(self.running_script)
-            # assert r is None, f"You are returning objects from {self.running_script}"
-        except StopIteration:
-            pass
 
         # Add all object that have been queued
         self.add_object_lock = False
@@ -130,7 +128,7 @@ class State:
 
         # Logic for all objects
         for object in self.objects:
-            object.logic(self)
+            object.logic()
         self.particles.logic()
 
         # Clean dead objects

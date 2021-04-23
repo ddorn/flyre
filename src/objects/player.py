@@ -4,13 +4,15 @@ from random import gauss, random
 from pygame import Vector2
 
 from src.engine import *
-from . import Bullet, CopyEnemy, SpaceShip
+from . import Bullet, CopyEnemy, SpaceShip, Text, Title
 from .bullets import DebuffBullet
 from .other import HealthBar
 from .skilltree import build_skill_tree, FireDebuff
 
 
 __all__ = ["Player"]
+
+from .. import states
 
 
 class Player(SpaceShip):
@@ -91,7 +93,7 @@ class Player(SpaceShip):
         if not self.invincible:
             App.current_state().do_shake(3)
 
-    def logic(self, state):
+    def logic(self):
         l = self.vel.length()
         if l > 0:
             self.vel *= 1 - min(1, self.MAX_THRUST / l)
@@ -99,7 +101,7 @@ class Player(SpaceShip):
         clamp_length(self.vel, self.max_speed)
 
         for jet in (self.JET1, self.JET2):
-            state.particles.add(
+            self.state.particles.add(
                 SquareParticle(YELLOW)
                 .builder()
                 .at(self.sprite_to_screen(jet), gauss(90, 10))
@@ -111,13 +113,13 @@ class Player(SpaceShip):
                 .build()
             )
 
-        super().logic(state)
+        super().logic()
 
         self.pos.x = clamp(self.pos.x, WORLD.left, WORLD.right - self.size.x)
         self.pos.y = clamp(self.pos.y, WORLD.top, WORLD.bottom - self.size.y)
 
         # Handle the healt bar
-        self.health_bar.logic(state)
+        self.health_bar.logic()
         self.health_bar.center = self.pos + (self.size.x / 2, self.size.y + 3)
         self.health_bar.center = self.center + (0, -self.size.y / 2 - 13)
 
@@ -139,3 +141,14 @@ class Player(SpaceShip):
             .acceleration(-1 / 60)
             .build()
         )
+
+    def on_death(self, state):
+        super(Player, self).on_death(state)
+
+        duration = 4 * 60
+
+        self.state.add(Title("Mission failed", RED, duration, "blink"))
+
+        @self.state.do_later(duration)
+        def _():
+            self.state.replace_state(states.NameInputState(self))

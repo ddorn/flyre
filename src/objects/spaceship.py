@@ -288,11 +288,11 @@ class SpaceShip(Entity):
             .build()
         )
 
-    def logic(self, state: State):
-        super().logic(state)
+    def logic(self):
+        super().logic()
 
         new_overlapping = {}
-        for ship in state.get_all(SpaceShip):
+        for ship in self.state.get_all(SpaceShip):
             if ship is self:
                 continue
 

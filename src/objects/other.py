@@ -38,17 +38,17 @@ class Planet(Object):
         speed = randint(2, 5)
         return Planet(number, pos, speed, wrap_rect)
 
-    def logic(self, state):
-        super().logic(state)
+    def logic(self):
+        super().logic()
         self.animation.logic()
 
         if self.pos.y > self.wrap_rect.bottom + self.size.y:
 
-            numbers_taken = [planet.number for planet in state.get_all(Planet)]
+            numbers_taken = [planet.number for planet in self.state.get_all(Planet)]
             number = choice(
                 [i for i in range(self.TOTAL_PLANETS) if i not in numbers_taken]
             )
-            positions = [planet.pos for planet in state.get_all(Planet)]
+            positions = [planet.pos for planet in self.state.get_all(Planet)]
             # planet can be none if it can't place it, so I keep the old planet alive until I can place it.
             planet = Planet.random_planet(
                 number, positions, self.wrap_rect, self.wrap_rect.top - 200
@@ -56,7 +56,7 @@ class Planet(Object):
 
             if planet is not None:
                 self.alive = False
-                state.add(planet)
+                self.state.add(planet)
 
     def draw(self, gfx):
         frame = self.animation.image()
@@ -212,8 +212,8 @@ class Title(Object):
                 self.shown_image = pygame.Surface((0, 0))
             yield
 
-    def logic(self, state):
-        super().logic(state)
+    def logic(self):
+        super().logic()
 
         if not self.scripts:
             self.alive = False
@@ -316,7 +316,7 @@ class HealthBar(Object):
         self.flash_duration = -1
         self.last_health = entity.life
 
-    def logic(self, state):
+    def logic(self):
         self.flash_duration -= 1
 
         loss = self.last_health - self.entity.life

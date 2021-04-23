@@ -22,6 +22,8 @@ class LoadingState(State):
         self.add(Text(GAME_NAME, YELLOW, TITLE_SIZE, center=(W / 2, H / 3)))
 
     def script(self):
+        self.replace_state(MenuState())
+
         start = time()
         for path in self.images:
             self.progress += 1

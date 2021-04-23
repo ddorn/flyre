@@ -1,12 +1,12 @@
 from math import pi, sin
-from random import gauss, random, uniform
+from random import gauss, random
 
 import pygame.gfxdraw
 from pygame import Vector2
 
 from src.engine import *
 
-__all__ = ["Bullet", "Laser", "DebuffBullet"]
+__all__ = ["Bullet", "Laser", "DebuffBullet", "Bomb"]
 
 
 from .skilltree import Debuff
@@ -56,9 +56,9 @@ class Bullet(SpriteObject, BaseBullet):
         BaseBullet.__init__(self, owner, damage, speed, angle, crit)
         SpriteObject.__init__(self, pos, img, (0, 0), img.get_size(), vel, 90 - angle)
 
-    def logic(self, state):
-        SpriteObject.logic(self, state)
-        BaseBullet.logic(self, state)
+    def logic(self):
+        SpriteObject.logic(self)
+        BaseBullet.logic(self, self.state)
 
         screen = WORLD.inflate(1000, 1000)
         if not screen.collidepoint(*self.pos):
@@ -154,8 +154,8 @@ class Laser(Object, BaseBullet):
         self.preshoot_end = preshoot_duration + self.follow_player_end
         self.laser_duration = laser_duration + self.preshoot_end
 
-    def logic(self, state):
-        Object.logic(self, state)
+    def logic(self):
+        Object.logic(self)
 
         self.timer += 1
 
@@ -172,7 +172,7 @@ class Laser(Object, BaseBullet):
         if self.timer == self.preshoot_end:
             play("laser")
         if self.timer > self.preshoot_end:
-            state.particles.add(
+            self.state.particles.add(
                 LineParticle(20)
                 .builder()
                 .at(self.pos, self.angle)
@@ -182,7 +182,7 @@ class Laser(Object, BaseBullet):
                 .build()
             )
 
-            BaseBullet.logic(self, state)
+            BaseBullet.logic(self, self.state)
 
         # End
         if self.timer > self.laser_duration:
@@ -227,10 +227,10 @@ class Bomb(Object, BaseBullet):
         self.duration = timer
         self.timer = timer
 
-    def logic(self, state):
+    def logic(self):
         from .spaceship import SpaceShip
 
-        super().logic(state)
+        super().logic()
         self.animation.logic()
 
         if self.center.distance_to(self.target) < 2 * self.SPEED:
@@ -241,7 +241,7 @@ class Bomb(Object, BaseBullet):
         if self.timer == 0:
             self.animation = Animation("explosion1")
             play("explosion")
-            for ship in state.get_all(SpaceShip):
+            for ship in self.state.get_all(SpaceShip):
                 if (
                     ship.center.distance_to(self.center)
                     < self.RADIUS + ship.size.length() / 2

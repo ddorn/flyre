@@ -1,27 +1,52 @@
-from functools import lru_cache
 from random import gauss
 from typing import Optional, TYPE_CHECKING
 
 import pygame
 
-from .constants import GREEN, RED
-from . import App, GFX
-from .particles import ImageParticle
+from .gfx import GFX
 from .assets import font, rotate
-from .settings import settings
+from .constants import GREEN, RED
+from .particles import ImageParticle
 
 if TYPE_CHECKING:
     from . import State
 
-__all__ = ["Object", "Entity", "SpriteObject"]
+__all__ = ["Object", "Entity", "SpriteObject", "Scriptable"]
 
 from .utils import overlay, random_in_rect, random_rainbow_color
 
 
-class Object:
+class Scriptable:
+    def __init__(self):
+        self.scripts = set()
+
+    def add_script(self, generator):
+        self.scripts.add(generator)
+
+    def logic(self):
+        to_remove = set()
+        for script in self.scripts:
+            try:
+                next(script)
+            except StopIteration:
+                to_remove.add(script)
+        self.scripts.difference_update(to_remove)
+
+    def do_later(self, nb_of_frames):
+        """Decorator to automatically call a function :nb_of_frames: later."""
+        def decorator(func):
+            def script():
+                yield from range(nb_of_frames)
+                func()
+            self.add_script(script())
+            return func
+        return decorator
+
+class Object(Scriptable):
     Z = 0
 
     def __init__(self, pos, size=(1, 1), vel=(0, 0)):
+        super().__init__()
         self.pos = pygame.Vector2(pos)
         self.size = pygame.Vector2(size)
         self.vel = pygame.Vector2(vel)
@@ -54,22 +79,14 @@ class Object:
     def rect(self):
         return pygame.Rect(self.pos, self.size)
 
-    def logic(self, state):
+    def logic(self):
         """Overwrite this to update the object every frame.
 
-        Args:
-            state (State): Current state of the app
         """
 
-        self.pos += self.vel
+        super().logic()
 
-        to_remove = set()
-        for script in self.scripts:
-            try:
-                next(script)
-            except StopIteration:
-                to_remove.add(script)
-        self.scripts.difference_update(to_remove)
+        self.pos += self.vel
 
         self.state.debug.rectangle(self.rect, self._random_color)
         self.state.debug.vector(self.vel * 10, self.center, self._random_color)
@@ -228,7 +245,7 @@ class Entity(SpriteObject):
         from src.engine import ImageParticle
 
         pos = random_in_rect(self.rect)
-        App.current_state().particles.add(
+        self.state.particles.add(
             ImageParticle(surf)
             .builder()
             .at(pos, 90)
@@ -239,8 +256,8 @@ class Entity(SpriteObject):
             .build()
         )
 
-    def logic(self, state):
-        super().logic(state)
+    def logic(self):
+        super().logic()
 
         self.last_hit += 1
 
