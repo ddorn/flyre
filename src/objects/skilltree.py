@@ -109,10 +109,11 @@ def fire_duration(player):
     player.fire_duration += 30
 
 
-@Power.make("Extra defense", "Receive half damage from contacts with other spaceships", 15)
+@Power.make(
+    "Extra defense", "Receive half damage from contacts with other spaceships", 15
+)
 def extra_defense(player):
     player.CONCTACT_RESISTANCE /= 2
-
 
 
 class Node(Object):

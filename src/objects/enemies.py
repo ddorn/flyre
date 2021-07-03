@@ -43,7 +43,11 @@ class Enemy(SpaceShip):
                 yield from range(8)
 
     def fire(self, state, direction):
-        return state.add(Bullet(self.sprite_to_screen(self.GUN), direction, self, kind=self.BULLET_KIND))
+        return state.add(
+            Bullet(
+                self.sprite_to_screen(self.GUN), direction, self, kind=self.BULLET_KIND
+            )
+        )
 
     def hit(self, bullet):
         super().hit(bullet)
@@ -144,7 +148,7 @@ class CopyEnemy(Enemy):
                     * (1 if not crit else self.player.crit_mult),
                     self.player.bullet_speed,
                     crit,
-                    kind=self.BULLET_KIND
+                    kind=self.BULLET_KIND,
                 )
             )
 
@@ -272,7 +276,7 @@ class Boss(Enemy):
                     self.sprite_to_screen(gun),
                     from_polar(1, self.angle + delta_angle),
                     self,
-                    kind=self.BULLET_KIND
+                    kind=self.BULLET_KIND,
                 )
             )
 

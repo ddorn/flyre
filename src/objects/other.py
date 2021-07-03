@@ -1,6 +1,7 @@
 from glob import glob
 from math import ceil
 from random import choice, randint
+from time import time
 
 from pygame import Vector2
 from pygame.locals import *
@@ -79,6 +80,11 @@ class Debug(Object):
         self.enabled = DEBUG
         self.paused = False
 
+        self.frame_times = [0]
+
+    def logic(self):
+        self.frame_times = self.frame_times[-29:] + [time()]
+
     def toggle(self, *args):
         self.enabled = not self.enabled
 
@@ -105,6 +111,10 @@ class Debug(Object):
     def draw(self, gfx):
         if not self.enabled:
             return
+
+        fps = len(self.frame_times) / (self.frame_times[-1] - self.frame_times[0])
+        s = text(f"FPS: {int(fps)}", 7, WHITE, "pixelmillennium")
+        gfx.blit(s, bottomleft=(4, H - 4))
 
         if self.paused:
             self.points, self.vectors, self.rects, self.texts = self.lasts

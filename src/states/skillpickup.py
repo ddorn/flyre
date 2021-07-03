@@ -159,7 +159,6 @@ class SkillPickUp(MyState):
             r_right = r.move(6, 0)
             r_left = r.move(-6, 0)
 
-
             star = tilemap("sprites", 4, 0, 16)
             for i in range(current.power.level):
                 r_right = gfx.blit(star, midleft=r_right.midright)

@@ -34,13 +34,17 @@ class Scriptable:
 
     def do_later(self, nb_of_frames):
         """Decorator to automatically call a function :nb_of_frames: later."""
+
         def decorator(func):
             def script():
                 yield from range(nb_of_frames)
                 func()
+
             self.add_script(script())
             return func
+
         return decorator
+
 
 class Object(Scriptable):
     Z = 0
